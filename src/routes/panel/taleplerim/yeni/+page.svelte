@@ -3,6 +3,9 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
+  import { authStore } from '$lib/stores/auth.js';
+  import { get } from 'svelte/store';
+
   let subjects = [];
   let loading = false;
   
@@ -15,6 +18,12 @@
   };
 
   onMount(async () => {
+    const { isAuthenticated } = get(authStore);
+    if (!isAuthenticated) {
+      goto('/giris?redirect=/panel/taleplerim/yeni');
+      return;
+    }
+
     const res = await api.get('/subjects/list.php');
     subjects = res.data;
   });
@@ -33,7 +42,7 @@
 </script>
 
 <svelte:head>
-  <title>Yeni Talep Oluştur - Bezmidar</title>
+  <title>Yeni Talep Oluştur - DijitalMentor</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-8 max-w-2xl">

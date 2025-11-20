@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-  <title>Kayıt Ol - Bezmidar</title>
+  <title>Kayıt Ol - DijitalMentor</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-12 max-w-md">
