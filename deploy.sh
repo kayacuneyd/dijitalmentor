@@ -39,6 +39,7 @@ fi
 
 # 2. Build
 echo "🔨 Build alınıyor..."
+rm -rf build
 npm run build
 
 # 3. Hosting'e yükle
