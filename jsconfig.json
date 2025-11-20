@@ -1,0 +1,23 @@
+{
+    "extends": "./.svelte-kit/tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "moduleResolution": "bundler",
+        "target": "esnext",
+        "module": "esnext",
+        "checkJs": true,
+        "paths": {
+            "$lib": [
+                "src/lib"
+            ],
+            "$lib/*": [
+                "src/lib/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*.d.ts",
+        "src/**/*.js",
+        "src/**/*.svelte"
+    ]
+}
