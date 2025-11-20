@@ -191,13 +191,23 @@
             </div>
           </div>
           
-          <button 
-            on:click={handleContact}
-            class="w-full bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg shadow-green-100"
-          >
-            <span>💬</span>
-            WhatsApp ile İletişime Geç
-          </button>
+          <div class="grid grid-cols-2 gap-3">
+            <a 
+              href="/panel/mesajlar?teacher_id={teacher.id}"
+              class="bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+            >
+              <span>✉️</span>
+              Mesaj Gönder
+            </a>
+            
+            <button 
+              on:click={handleContact}
+              class="bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg shadow-green-100"
+            >
+              <span>💬</span>
+              WhatsApp
+            </button>
+          </div>
           
           <p class="text-xs text-center text-gray-400 mt-4">
             Güvenliğiniz için tüm görüşmeleri platform üzerinden başlatın.
@@ -237,26 +247,25 @@
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all">
       <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-          💬
+        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+          🔒
         </div>
-        <h3 class="text-xl font-bold text-gray-900">İletişim Bilgileri</h3>
-        <p class="text-gray-500 mt-2">WhatsApp üzerinden öğretmenle doğrudan iletişime geçebilirsiniz.</p>
+        <h3 class="text-xl font-bold text-gray-900">Premium Özellik</h3>
+        <p class="text-gray-600 mt-4 leading-relaxed">
+          Uygulama içerisindeki tüm öğretmenlerin WhatsApp iletişim bilgilerini görebilmek için tek sefere mahsus <span class="font-bold text-gray-900">10€ değerinde Amazon Hediye kartı</span>'nı aşağıdaki e-posta adresine göndererek hesabınızı aktive edebilirsiniz.
+        </p>
+        
+        <div class="bg-gray-50 p-4 rounded-xl mt-6 border border-gray-100">
+          <p class="text-sm text-gray-500 mb-1">E-posta Adresi</p>
+          <p class="text-lg font-mono font-bold text-blue-600 select-all">hediye@dijitalmentor.de</p>
+        </div>
       </div>
-      
-      <a 
-        href="https://wa.me/{teacher.phone}?text=Merhaba, Bezmidar'dan proflinizi gördüm."
-        target="_blank"
-        class="block w-full bg-green-600 text-white text-center py-4 rounded-xl font-bold hover:bg-green-700 transition mb-4 shadow-lg shadow-green-200"
-      >
-        WhatsApp'ta Sohbet Başlat
-      </a>
       
       <button 
         on:click={() => showContactModal = false}
-        class="w-full text-gray-500 font-medium py-3 hover:bg-gray-50 rounded-xl transition"
+        class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition shadow-lg shadow-gray-200"
       >
-        Kapat
+        Anlaşıldı, Kapat
       </button>
     </div>
   </div>
