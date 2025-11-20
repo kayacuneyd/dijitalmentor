@@ -24,9 +24,12 @@
         <Button variant="secondary" size="lg" href="/ara">
           🔍 Öğretmen Ara
         </Button>
-        <Button variant="tertiary" size="lg" href="/kayit?role=student" class="!text-white hover:!text-primary-100">
-          Öğretmen Ol
-        </Button>
+        <button 
+          onclick="window.location.href='/kayit?role=student'"
+          class="px-8 py-4 text-lg rounded-xl font-semibold border-2 border-white text-white hover:bg-white hover:text-primary-600 transition-all duration-200"
+        >
+          ✨ Öğretmen Ol
+        </button>
       </div>
     </div>
   </div>
