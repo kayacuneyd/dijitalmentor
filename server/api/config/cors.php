@@ -21,7 +21,7 @@ $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $originHost = $origin ? parse_url($origin, PHP_URL_HOST) : '';
 $currentHost = $_SERVER['HTTP_HOST'] ?? '';
 
-$isAllowed = in_array($origin, $allowedOrigins, true);
+$isAllowed = empty($origin) ? true : in_array($origin, $allowedOrigins, true);
 
 // Same-host shortcut (fetch from api.dijitalmentor.de to api.dijitalmentor.de)
 if (!$isAllowed && $originHost && $currentHost && strcasecmp($originHost, $currentHost) === 0) {
