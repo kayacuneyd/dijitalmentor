@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Allow API traffic to pass through to PHP (server/api)
+    RewriteRule ^server/api/(.*)$ server/api/$1 [L]
+
+    # Legacy direct api/ path, keep for compatibility
+    RewriteRule ^api/(.*)$ api/$1 [L]
+
+    # SPA fallback: send everything else to index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.html [L]
+</IfModule>
+
+# Disable caching for HTML/JS/CSS to avoid stale bundles
+<FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+</FilesMatch>
