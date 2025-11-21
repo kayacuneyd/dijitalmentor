@@ -1,4 +1,31 @@
 <?php
+// Lightweight .env loader for shared hosting where env vars aren't auto-loaded
+function loadDotEnv($path)
+{
+    if (!is_readable($path)) {
+        return;
+    }
+
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (str_starts_with(trim($line), '#')) {
+            continue;
+        }
+        if (!str_contains($line, '=')) {
+            continue;
+        }
+        [$key, $value] = array_map('trim', explode('=', $line, 2));
+        $value = trim($value, "\"'"); // strip quotes if any
+        putenv("$key=$value");
+        $_ENV[$key] = $value;
+    }
+}
+
+// Try to load env files relative to repo root
+$baseDir = realpath(__DIR__ . '/../../');
+loadDotEnv($baseDir . '/.env');
+loadDotEnv($baseDir . '/.env.local');
+
 // Prefer environment variables, but fall back to known production defaults for dijitalmentor.de
 $envHost = getenv('DB_HOST');
 $envName = getenv('DB_NAME');
@@ -7,7 +34,7 @@ $envPass = getenv('DB_PASS');
 
 $isProdHost = isset($_SERVER['HTTP_HOST']) && stripos($_SERVER['HTTP_HOST'], 'dijitalmentor.de') !== false;
 
-if ($envHost && $envName && $envUser !== false) {
+if (!empty($envHost) && !empty($envName) && $envUser !== false) {
     $host = $envHost;
     $dbname = $envName;
     $username = $envUser;
