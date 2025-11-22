@@ -1,22 +1,29 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
 
-    # Allow API traffic to pass through to PHP (server/api)
-    RewriteRule ^server/api/(.*)$ server/api/$1 [L]
+# Enable rewrite engine
+RewriteEngine On
 
-    # Legacy direct api/ path, keep for compatibility
-    RewriteRule ^api/(.*)$ api/$1 [L]
+# API routing - server/api/ altındaki dosyalara erişim
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^server/api/(.*)$ server/api/$1 [L,QSA]
 
-    # SPA fallback: send everything else to index.html
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.html [L]
-</IfModule>
+# Handle OPTIONS requests (CORS preflight)
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
 
-# Disable caching for HTML/JS/CSS to avoid stale bundles
-<FilesMatch "\.(html|js|css)$">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
-    Header set Pragma "no-cache"
-    Header set Expires 0
-</FilesMatch>
+# PHP error handling
+php_flag display_errors Off
+php_flag log_errors On
+
+# File upload limits
+php_value upload_max_filesize 5M
+php_value post_max_size 6M
+
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"

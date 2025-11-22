@@ -26,32 +26,25 @@ $baseDir = realpath(__DIR__ . '/../../');
 loadDotEnv($baseDir . '/.env');
 loadDotEnv($baseDir . '/.env.local');
 
-// Prefer environment variables, but fall back to known production defaults for dijitalmentor.de
+// Read database credentials from environment variables
+// Production: Set these in .env file on Hostinger
+// Local dev: Set these in .env.local file
 $envHost = getenv('DB_HOST');
 $envName = getenv('DB_NAME');
 $envUser = getenv('DB_USER');
 $envPass = getenv('DB_PASS');
 
-$isProdHost = isset($_SERVER['HTTP_HOST']) && stripos($_SERVER['HTTP_HOST'], 'dijitalmentor.de') !== false;
-
-if (!empty($envHost) && !empty($envName) && $envUser !== false) {
-    $host = $envHost;
-    $dbname = $envName;
-    $username = $envUser;
-    $password = $envPass ?: '';
-} elseif ($isProdHost) {
-    // Hostinger prod defaults (previous hardcoded values)
-    $host = 'localhost';
-    $dbname = 'u553245641_dijitalmentor';
-    $username = 'u553245641_dijitalmentor';
-    $password = 'Dijitalmentor1453!';
-} else {
-    // Local dev fallback
-    $host = 'localhost';
-    $dbname = 'dijitalmentor_db';
-    $username = 'root';
-    $password = '';
+// Require environment variables - no hardcoded fallbacks for security
+if (empty($envHost) || empty($envName) || $envUser === false) {
+    http_response_code(500);
+    error_log('[dijitalmentor] Database configuration missing. Set DB_HOST, DB_NAME, DB_USER, DB_PASS in .env file.');
+    die(json_encode(['error' => 'Database configuration missing']));
 }
+
+$host = $envHost;
+$dbname = $envName;
+$username = $envUser;
+$password = $envPass ?: '';
 
 try {
     $pdo = new PDO(

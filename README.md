@@ -37,7 +37,7 @@ mysql -u u553245641_dijitalmentor -p u553245641_dijitalmentor < database/last_da
    - Database bilgileri doğru mu?
 
 3. **Test edin:**
-   - https://dijitalmentor.de/server/api/subjects/list.php
+   - https://api.dijitalmentor.de/server/api/subjects/list.php
 
 ### Environment Variables
 
@@ -52,8 +52,10 @@ PUBLIC_MOCK_MODE=false
 > kullanırsanız, frontend barındırıldığı hostta karşılığı olmadığı için 404 sayfasına düşer. `https://api.dijitalmentor.de/server/api`
 > ya da kullandığınız API domainini eksiksiz yazın.
 
-**Production (GitHub Actions):**
-- `.github/workflows/deploy.yml` dosyasında ayarlı
+**Production (Vercel):**
+- Vercel Dashboard → Project Settings → Environment Variables
+- `PUBLIC_API_URL=https://api.dijitalmentor.de/server/api`
+- `PUBLIC_MOCK_MODE=false`
 
 ## 📁 Proje Yapısı
 
@@ -153,7 +155,7 @@ npm run build
 
 ```bash
 # URL'yi kontrol edin
-curl https://dijitalmentor.de/server/api/subjects/list.php
+curl https://api.dijitalmentor.de/server/api/subjects/list.php
 
 # CORS hatası varsa .htaccess kontrol edin
 ```
