@@ -223,12 +223,30 @@ class APIClient {
     
     try {
       const response = await fetch(`${API_URL}${endpoint}`, config);
-      const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.error || 'Request failed');
+
+      // Try to parse JSON response
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        // If JSON parsing fails, throw with status info
+        throw new Error(`API Error (${response.status}): Failed to parse response`);
+      }
+
+      // Check if request was successful
+      if (!response.ok) {
+        const errorMsg = data.error || data.message || `Request failed with status ${response.status}`;
+        throw new Error(errorMsg);
+      }
+
       return data;
     } catch (error) {
-      if (IS_DEV) console.error('API Error:', error);
+      // Enhanced error logging
+      console.error('API Error Details:', {
+        endpoint: `${API_URL}${endpoint}`,
+        error: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
