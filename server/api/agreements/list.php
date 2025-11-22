@@ -25,7 +25,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT id, teacher_id, parent_id
         FROM conversations
-        WHERE id = ? AND $userField = ?
+        WHERE id = ? AND {$userField} = ?
         LIMIT 1
     ");
     $stmt->execute([$conversationId, $userId]);

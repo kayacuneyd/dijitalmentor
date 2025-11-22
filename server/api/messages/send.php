@@ -40,9 +40,9 @@ try {
     $otherField = ($userRole === 'student') ? 'parent_id' : 'teacher_id';
 
     $stmt = $pdo->prepare("
-        SELECT id, $otherField as other_user_id
+        SELECT id, {$otherField} as other_user_id
         FROM conversations
-        WHERE id = ? AND $userField = ?
+        WHERE id = ? AND {$userField} = ?
     ");
     $stmt->execute([$conversationId, $userId]);
     $conversation = $stmt->fetch(PDO::FETCH_ASSOC);

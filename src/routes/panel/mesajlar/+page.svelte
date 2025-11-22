@@ -7,6 +7,7 @@
   import AgreementForm from '$lib/components/AgreementForm.svelte';
   import AgreementCard from '$lib/components/AgreementCard.svelte';
   import { toast } from '$lib/stores/toast.js';
+  import { browser } from '$app/environment';
 
   let conversations = [];
   let activeConversation = null;
@@ -19,16 +20,36 @@
   let showAgreementForm = false;
   let subjects = [];
   let subjectsLoading = false;
+  let isMobile = false;
+  let showMobileList = false;
 
   $: user = $authStore.user;
 
   let refreshInterval;
+
+  const cleanupFns = [];
 
   onMount(async () => {
     if (!$authStore.isAuthenticated) {
       goto('/giris');
       return;
     }
+
+    if (browser) {
+      const mql = window.matchMedia('(max-width: 767px)');
+      const handleChange = (event) => {
+        isMobile = event.matches;
+        if (!isMobile) {
+          showMobileList = false;
+        } else if (!activeConversation) {
+          showMobileList = true;
+        }
+      };
+      handleChange(mql);
+      mql.addEventListener('change', handleChange);
+      cleanupFns.push(() => mql.removeEventListener('change', handleChange));
+    }
+
     await loadConversations();
 
     // Check for conversation_id query param to select existing conversation
@@ -77,6 +98,7 @@
 
     return () => {
       if (refreshInterval) clearInterval(refreshInterval);
+      cleanupFns.forEach(fn => fn());
     };
   });
 
@@ -94,6 +116,9 @@
 
   async function selectConversation(conv) {
     activeConversation = conv;
+    if (isMobile) {
+      showMobileList = false;
+    }
     await loadMessages(conv.id);
     await loadAgreements(conv.id);
   }
@@ -227,7 +252,7 @@
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 h-full flex overflow-hidden">
     
     <!-- Sidebar -->
-    <div class="w-full md:w-80 border-r border-gray-100 flex flex-col">
+    <div class={`w-full md:w-80 border-r border-gray-100 flex-col ${isMobile && !showMobileList ? 'hidden' : 'flex'}`}>
       <div class="p-4 border-b border-gray-100">
         <h2 class="text-xl font-bold text-gray-900">Mesajlar</h2>
       </div>
@@ -271,10 +296,20 @@
     </div>
 
     <!-- Chat Area -->
-    <div class="flex-1 flex flex-col bg-gray-50/30 hidden md:flex">
+    <div class={`flex-1 bg-gray-50/30 flex-col ${isMobile && showMobileList ? 'hidden' : 'flex'}`}>
       {#if activeConversation}
         <!-- Chat Header -->
         <div class="p-4 bg-white border-b border-gray-100 flex items-center gap-3">
+          {#if isMobile}
+            <button
+              class="mr-2 text-blue-600 font-semibold"
+              on:click={() => {
+                showMobileList = true;
+              }}
+            >
+              ← Mesajlar
+            </button>
+          {/if}
           <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
             {activeConversation.other_user.name.charAt(0).toUpperCase()}
           </div>

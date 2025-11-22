@@ -61,11 +61,13 @@ try {
     }
 
     // Get pagination parameters
-    $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 100) : 50;
-    $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+    $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 50;
+    $limit = max(1, min($limit, 100));
+    $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
+    $offset = max(0, $offset);
 
     // Get messages for this conversation
-    $stmt = $pdo->prepare("
+    $messagesSql = "
         SELECT
             m.id,
             m.conversation_id,
@@ -79,9 +81,10 @@ try {
         INNER JOIN users u ON u.id = m.sender_id
         WHERE m.conversation_id = ?
         ORDER BY m.created_at DESC
-        LIMIT ? OFFSET ?
-    ");
-    $stmt->execute([$conversationId, $limit, $offset]);
+        LIMIT {$limit} OFFSET {$offset}
+    ";
+    $stmt = $pdo->prepare($messagesSql);
+    $stmt->execute([$conversationId]);
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Format messages

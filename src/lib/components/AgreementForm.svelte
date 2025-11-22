@@ -17,7 +17,8 @@
     hourly_rate: 25,
     hours_per_week: 1,
     start_date: '',
-    notes: ''
+    notes: '',
+    turkish_center_id: ''
   };
 
   $: if (subjects.length && !form.subject_id) {
@@ -25,6 +26,35 @@
   }
 
   $: isOnline = form.lesson_location === 'online';
+  $: isTurkishCenter = form.lesson_location === 'turkish_center';
+  $: requiresAddress = form.lesson_location === 'student_home';
+
+  $: if (form.lesson_location !== 'turkish_center' && form.turkish_center_id) {
+    form.turkish_center_id = '';
+  }
+
+  let centers = [];
+  let centersLoading = false;
+  let centersError = '';
+
+  async function loadCenters() {
+    if (centersLoading || centers.length) return;
+    centersLoading = true;
+    centersError = '';
+    try {
+      const res = await api.get('/centers/list.php');
+      centers = res.data?.centers || [];
+    } catch (err) {
+      console.error(err);
+      centersError = err.message || 'Türk kurumları yüklenemedi';
+    } finally {
+      centersLoading = false;
+    }
+  }
+
+  $: if (isTurkishCenter) {
+    loadCenters();
+  }
 
   async function handleSubmit() {
     if (submitting) return;
@@ -39,8 +69,13 @@
       return;
     }
 
-    if (!isOnline && !form.lesson_address.trim()) {
+    if (requiresAddress && !form.lesson_address.trim()) {
       toast.error('Fiziksel dersler için adres girin');
+      return;
+    }
+
+    if (isTurkishCenter && !form.turkish_center_id) {
+      toast.error('Lütfen Türk kurumunu seçin');
       return;
     }
 
@@ -55,7 +90,8 @@
         hours_per_week: Number(form.hours_per_week) || 1,
         start_date: form.start_date || null,
         notes: form.notes?.trim() || null,
-        lesson_address: form.lesson_address?.trim() || null,
+        lesson_address: requiresAddress ? (form.lesson_address?.trim() || null) : null,
+        turkish_center_id: isTurkishCenter ? Number(form.turkish_center_id) : null,
         meeting_platform: 'jitsi'
       };
 
@@ -119,16 +155,38 @@
       </div>
     </div>
 
-    {#if !isOnline}
+    {#if requiresAddress}
       <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-address">Adres</label>
         <input
           id="agreement-address"
           type="text"
           class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
-          placeholder="Adres veya dernek bilgisi"
+          placeholder="Adres bilgisi"
           bind:value={form.lesson_address}
         />
+      </div>
+    {:else if isTurkishCenter}
+      <div class="md:col-span-2 space-y-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-center">Türk Kurumu</label>
+        {#if centersLoading}
+          <div class="text-sm text-gray-500">Kurumlar yükleniyor...</div>
+        {:else if centersError}
+          <div class="text-sm text-red-600">{centersError}</div>
+        {:else if centers.length === 0}
+          <div class="text-sm text-gray-500">Aktif Türk kurumu bulunamadı.</div>
+        {:else}
+          <select
+            id="agreement-center"
+            class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+            bind:value={form.turkish_center_id}
+          >
+            <option value="">Kurum seçin</option>
+            {#each centers as center}
+              <option value={center.id}>{center.city} - {center.name}</option>
+            {/each}
+          </select>
+        {/if}
       </div>
     {/if}
 
