@@ -22,8 +22,17 @@ try {
 
     $conversationId = (int)$_GET['conversation_id'];
 
+    // Debug logging
+    error_log("=== Message Detail Request ===");
+    error_log("User ID: $userId");
+    error_log("User Role: $userRole");
+    error_log("Conversation ID: $conversationId");
+    error_log("User Data: " . json_encode($user));
+
     // Verify user is a participant in this conversation
     $userField = ($userRole === 'student') ? 'teacher_id' : 'parent_id';
+
+    error_log("Checking: $userField = $userId for conversation $conversationId");
 
     $stmt = $pdo->prepare("
         SELECT id, teacher_id, parent_id
@@ -32,6 +41,11 @@ try {
     ");
     $stmt->execute([$conversationId, $userId]);
     $conversation = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    error_log("Conversation found: " . ($conversation ? "YES" : "NO"));
+    if ($conversation) {
+        error_log("Conversation data: " . json_encode($conversation));
+    }
 
     if (!$conversation) {
         http_response_code(404);

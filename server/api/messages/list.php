@@ -10,11 +10,19 @@ try {
     $userId = isset($user['user_id']) ? (int) $user['user_id'] : (int) ($user['id'] ?? 0);
     $userRole = $user['role'];
 
+    // Debug logging
+    error_log("=== Conversation List Request ===");
+    error_log("User ID: $userId");
+    error_log("User Role: $userRole");
+    error_log("User Data: " . json_encode($user));
+
     // Determine which field to use based on user role
     // Note: 'student' role is actually teachers in this system
     $userField = ($userRole === 'student') ? 'teacher_id' : 'parent_id';
     $otherField = ($userRole === 'student') ? 'parent_id' : 'teacher_id';
     $unreadField = ($userRole === 'student') ? 'teacher_unread_count' : 'parent_unread_count';
+
+    error_log("Query field: $userField = $userId");
 
     // Get all conversations for this user
     $stmt = $pdo->prepare("
@@ -41,6 +49,11 @@ try {
 
     $stmt->execute([$userId]);
     $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    error_log("Found " . count($conversations) . " conversations");
+    if (count($conversations) > 0) {
+        error_log("First conversation: " . json_encode($conversations[0]));
+    }
 
     // Format the response
     $formattedConversations = array_map(function($conv) {
