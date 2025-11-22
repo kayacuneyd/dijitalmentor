@@ -228,25 +228,43 @@
             </div>
           </div>
           
-          <div class="grid grid-cols-2 gap-3">
-            {#if userRole !== 'student'}
-              <a 
+          {#if userRole === 'parent'}
+            <!-- Show both buttons for parents -->
+            <div class="grid grid-cols-2 gap-3">
+              <a
                 href="/panel/mesajlar?teacher_id={teacher.id}"
                 class="bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
               >
                 <span>✉️</span>
                 Mesaj Gönder
               </a>
-            {/if}
-            
-            <button 
-              on:click={handleContact}
-              class="bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg shadow-green-100"
-            >
-              <span>💬</span>
-              WhatsApp
-            </button>
-          </div>
+
+              <button
+                on:click={handleContact}
+                class="bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg shadow-green-100"
+              >
+                <span>💬</span>
+                WhatsApp
+              </button>
+            </div>
+          {:else if userRole === 'student'}
+            <!-- Show message for teachers -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+              <p class="text-sm text-yellow-800 font-semibold">
+                ⚠️ Öğretmenler birbirleriyle mesajlaşamaz
+              </p>
+              <p class="text-xs text-yellow-600 mt-1">
+                Sadece veli ve öğretmen arasında iletişim mümkündür.
+              </p>
+            </div>
+          {:else}
+            <!-- Show for non-authenticated users -->
+            <div class="text-center">
+              <a href="/giris" class="bg-blue-600 text-white py-4 px-6 rounded-xl font-bold hover:bg-blue-700 transition inline-block">
+                Giriş Yapın
+              </a>
+            </div>
+          {/if}
           
           <p class="text-xs text-center text-gray-400 mt-4">
             Güvenliğiniz için tüm görüşmeleri platform üzerinden başlatın.

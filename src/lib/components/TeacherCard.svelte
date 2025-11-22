@@ -1,8 +1,10 @@
 <script>
+  import { authStore } from '$lib/stores/auth.js';
+
   export let teacher;
-  
+
   let subjects = [];
-  
+
   $: {
     if (Array.isArray(teacher.subjects)) {
       subjects = teacher.subjects.map(s => typeof s === 'object' ? s.name : s);
@@ -12,12 +14,18 @@
       subjects = [];
     }
   }
+
+  $: canAccessProfile = !$authStore.isAuthenticated || $authStore.user?.role !== 'student';
 </script>
 
-<a 
-  href="/profil/{teacher.id}" 
-  class="block bg-white rounded-card shadow-card hover:shadow-card-hover transition-all border border-gray-100 p-6 group"
->
+{#if canAccessProfile}
+  <a
+    href="/profil/{teacher.id}"
+    class="block bg-white rounded-card shadow-card hover:shadow-card-hover transition-all border border-gray-100 p-6 group"
+  >
+{:else}
+  <div class="block bg-white rounded-card shadow-card border border-gray-100 p-6 opacity-50 cursor-not-allowed relative">
+{/if}
   <div class="flex gap-4">
     <!-- Avatar -->
     <div class="flex-shrink-0">
@@ -107,4 +115,18 @@
       {/if}
     </div>
   </div>
+
+  {#if !canAccessProfile}
+    <!-- Overlay for teachers -->
+    <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 rounded-card">
+      <div class="text-center px-4">
+        <p class="text-sm font-semibold text-yellow-800">⚠️ Öğretmen profilleri sadece veliler tarafından görüntülenebilir</p>
+      </div>
+    </div>
+  {/if}
+
+{#if canAccessProfile}
 </a>
+{:else}
+</div>
+{/if}

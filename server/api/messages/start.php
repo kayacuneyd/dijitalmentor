@@ -60,9 +60,19 @@ try {
 
     if (!$isValidPair) {
         http_response_code(400);
+
+        // Specific error messages
+        if ($userRole === 'student' && $otherUser['role'] === 'student') {
+            $errorMsg = 'Öğretmenler birbirleriyle mesajlaşamaz';
+        } elseif ($userRole === 'parent' && $otherUser['role'] === 'parent') {
+            $errorMsg = 'Veliler birbirleriyle mesajlaşamaz';
+        } else {
+            $errorMsg = 'Mesajlaşma sadece öğretmen ve veli arasında başlatılabilir';
+        }
+
         echo json_encode([
             'success' => false,
-            'error' => 'Conversations can only be started between teachers and parents'
+            'error' => $errorMsg
         ]);
         exit();
     }

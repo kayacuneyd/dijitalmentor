@@ -3,10 +3,12 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/utils/api.js';
   import { authStore } from '$lib/stores/auth.js';
+  import { goto } from '$app/navigation';
 
   let request = null;
   let loading = true;
   let error = '';
+  let startingConversation = false;
 
   onMount(async () => {
     try {
@@ -18,6 +20,35 @@
       loading = false;
     }
   });
+
+  async function handleStartConversation() {
+    if (!$authStore.isAuthenticated) {
+      goto('/giris');
+      return;
+    }
+
+    if ($authStore.user.role !== 'student') {
+      alert('Sadece öğretmenler ders taleplerine başvurabilir.');
+      return;
+    }
+
+    startingConversation = true;
+    try {
+      const response = await api.post('/messages/start.php', {
+        other_user_id: request.parent_id
+      });
+
+      if (response.success) {
+        // Redirect to messages page with the conversation
+        goto(`/panel/mesajlar?conversation_id=${response.data.conversation_id}`);
+      }
+    } catch (e) {
+      console.error('Conversation start error:', e);
+      alert('Mesajlaşma başlatılamadı. Lütfen tekrar deneyin.');
+    } finally {
+      startingConversation = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -71,9 +102,24 @@
           </div>
 
           {#if $authStore.isAuthenticated}
-            <button class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
-              İletişime Geç
-            </button>
+            {#if $authStore.user.role === 'student'}
+              <button
+                on:click={handleStartConversation}
+                disabled={startingConversation}
+                class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {#if startingConversation}
+                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  İletişim Başlatılıyor...
+                {:else}
+                  ✉️ İletişime Geç
+                {/if}
+              </button>
+            {:else}
+              <div class="bg-gray-100 text-gray-600 px-6 py-3 rounded-lg font-semibold text-center">
+                Sadece öğretmenler başvurabilir
+              </div>
+            {/if}
           {:else}
             <a href="/giris" class="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
               Başvurmak için Giriş Yap
