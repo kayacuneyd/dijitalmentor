@@ -7,18 +7,11 @@ require_once '../config/auth.php';
 $user = requireAuth(['student', 'parent']);
 
 try {
-    $userId = isset($user['user_id']) ? (int) $user['user_id'] : (int) ($user['id'] ?? 0);
+    $userId = $user['id'];
     $userRole = $user['role'];
-
-    // Debug logging
-    error_log("=== Conversation Start Request ===");
-    error_log("User ID: $userId");
-    error_log("User Role: $userRole");
-    error_log("User Data: " . json_encode($user));
 
     // Get JSON input
     $input = json_decode(file_get_contents('php://input'), true);
-    error_log("Input Data: " . json_encode($input));
 
     if (!isset($input['other_user_id'])) {
         http_response_code(400);
@@ -30,8 +23,6 @@ try {
     }
 
     $otherUserId = (int)$input['other_user_id'];
-    $requestTitle = isset($input['request_title']) ? trim($input['request_title']) : null;
-    $requestId = isset($input['request_id']) ? (int)$input['request_id'] : null;
 
     // Prevent messaging yourself
     if ($otherUserId === $userId) {
@@ -69,19 +60,13 @@ try {
 
     if (!$isValidPair) {
         http_response_code(400);
-
-        // Specific error messages
-        if ($userRole === 'student' && $otherUser['role'] === 'student') {
-            $errorMsg = 'Öğretmenler birbirleriyle mesajlaşamaz';
-        } elseif ($userRole === 'parent' && $otherUser['role'] === 'parent') {
-            $errorMsg = 'Veliler birbirleriyle mesajlaşamaz';
-        } else {
-            $errorMsg = 'Mesajlaşma sadece öğretmen ve veli arasında başlatılabilir';
-        }
-
         echo json_encode([
             'success' => false,
-            'error' => $errorMsg
+            'error' => 'Conversations can only be started between teachers and parents',
+            'debug' => [
+                'current_user_role' => $userRole,
+                'other_user_role' => $otherUser['role']
+            ]
         ]);
         exit();
     }
@@ -100,6 +85,7 @@ try {
     $teacherId = ($userRole === 'student') ? $userId : $otherUserId;
     $parentId = ($userRole === 'parent') ? $userId : $otherUserId;
 
+    // ENHANCED ERROR LOGGING
     error_log("Creating conversation: teacher_id=$teacherId, parent_id=$parentId");
 
     // Check if conversation already exists
@@ -123,48 +109,62 @@ try {
         exit();
     }
 
-    // Create new conversation
-    $stmt = $pdo->prepare("
-        INSERT INTO conversations (teacher_id, parent_id, created_at, updated_at)
-        VALUES (?, ?, NOW(), NOW())
-    ");
-    $stmt->execute([$teacherId, $parentId]);
-    $conversationId = $pdo->lastInsertId();
-
-    // If this is a teacher applying to a lesson request, send automatic application message
-    if ($requestTitle && $userRole === 'student') {
-        $teacherName = $user['full_name'];
-        $autoMessage = "Merhaba, '{$requestTitle}' ders talebinize başvurmak istiyorum.\n\n- {$teacherName}";
-
-        $msgStmt = $pdo->prepare("
-            INSERT INTO messages (conversation_id, sender_id, message_text, created_at)
-            VALUES (?, ?, ?, NOW())
+    // Create new conversation with explicit error handling
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO conversations (teacher_id, parent_id, created_at, updated_at)
+            VALUES (?, ?, NOW(), NOW())
         ");
-        $msgStmt->execute([$conversationId, $userId, $autoMessage]);
+        $result = $stmt->execute([$teacherId, $parentId]);
 
-        error_log("Auto-message sent for lesson request: {$requestTitle}");
+        if (!$result) {
+            throw new Exception("Insert failed but no PDO exception thrown");
+        }
+
+        $conversationId = $pdo->lastInsertId();
+
+        if (!$conversationId) {
+            throw new Exception("No conversation ID returned after insert");
+        }
+
+        error_log("Conversation created successfully: ID=$conversationId");
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'conversation_id' => (int)$conversationId,
+                'is_new' => true,
+                'other_user' => [
+                    'id' => (int)$otherUser['id'],
+                    'name' => $otherUser['full_name'],
+                    'role' => $otherUser['role']
+                ]
+            ],
+            'message' => 'Conversation created successfully'
+        ]);
+
+    } catch (PDOException $insertError) {
+        // Log the specific SQL error
+        error_log("SQL Error in conversation insert: " . $insertError->getMessage());
+        error_log("Error Code: " . $insertError->getCode());
+        error_log("SQL State: " . $insertError->errorInfo[0]);
+
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Failed to create conversation',
+            'debug' => [
+                'sql_error' => $insertError->getMessage(),
+                'error_code' => $insertError->getCode()
+            ]
+        ]);
+        exit();
     }
 
-    echo json_encode([
-        'success' => true,
-        'data' => [
-            'conversation_id' => (int)$conversationId,
-            'is_new' => true,
-            'other_user' => [
-                'id' => (int)$otherUser['id'],
-                'name' => $otherUser['full_name'],
-                'role' => $otherUser['role']
-            ]
-        ],
-        'message' => 'Conversation created successfully'
-    ]);
 } catch (PDOException $e) {
-    // Enhanced error logging
-    error_log("=== Database Error in messages/start.php ===");
-    error_log("Error Message: " . $e->getMessage());
+    error_log("Database error in messages/start.php: " . $e->getMessage());
     error_log("Error Code: " . $e->getCode());
-    error_log("SQL State: " . ($e->errorInfo[0] ?? 'N/A'));
-    error_log("Stack Trace: " . $e->getTraceAsString());
+    error_log("Stack trace: " . $e->getTraceAsString());
 
     http_response_code(500);
     echo json_encode([
@@ -172,14 +172,11 @@ try {
         'error' => 'Database error occurred',
         'debug' => [
             'message' => $e->getMessage(),
-            'code' => $e->getCode(),
-            'sql_state' => $e->errorInfo[0] ?? null
+            'code' => $e->getCode()
         ]
     ]);
 } catch (Exception $e) {
-    error_log("=== General Error in messages/start.php ===");
-    error_log("Error: " . $e->getMessage());
-    error_log("Stack Trace: " . $e->getTraceAsString());
+    error_log("General error in messages/start.php: " . $e->getMessage());
 
     http_response_code(500);
     echo json_encode([

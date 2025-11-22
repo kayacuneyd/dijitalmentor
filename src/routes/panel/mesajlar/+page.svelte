@@ -31,18 +31,31 @@
     }
     await loadConversations();
 
-    // Check for teacher_id query param to start new chat
-    const teacherId = $page.url.searchParams.get('teacher_id');
-    if (teacherId) {
-      const idNum = parseInt(teacherId);
-      // Öğretmenler diğer öğretmenlerle mesajlaşamaz
-      if ($authStore.user?.role === 'student') {
-        toast.error('Öğretmenler diğer öğretmenlerle mesajlaşamaz');
-      } else {
-        await startNewConversation(idNum);
+    // Check for conversation_id query param to select existing conversation
+    const conversationId = $page.url.searchParams.get('conversation_id');
+    if (conversationId) {
+      const idNum = parseInt(conversationId);
+      const conv = conversations.find(c => c.id === idNum);
+      if (conv) {
+        selectConversation(conv);
+      } else if (conversations.length > 0) {
+        selectConversation(conversations[0]);
       }
-    } else if (conversations.length > 0) {
-      selectConversation(conversations[0]);
+    }
+    // Check for teacher_id query param to start new chat
+    else {
+      const teacherId = $page.url.searchParams.get('teacher_id');
+      if (teacherId) {
+        const idNum = parseInt(teacherId);
+        // Öğretmenler diğer öğretmenlerle mesajlaşamaz
+        if ($authStore.user?.role === 'student') {
+          toast.error('Öğretmenler diğer öğretmenlerle mesajlaşamaz');
+        } else {
+          await startNewConversation(idNum);
+        }
+      } else if (conversations.length > 0) {
+        selectConversation(conversations[0]);
+      }
     }
 
     loadSubjects();

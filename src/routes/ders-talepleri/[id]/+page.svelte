@@ -36,9 +36,12 @@
     try {
       console.log('Starting conversation with parent_id:', request.parent_id);
       console.log('Current user:', $authStore.user);
+      console.log('Request title:', request.title);
 
       const response = await api.post('/messages/start.php', {
-        other_user_id: request.parent_id
+        other_user_id: request.parent_id,
+        request_title: request.title,
+        request_id: request.id
       });
 
       console.log('Start conversation response:', response);

@@ -23,6 +23,7 @@ try {
     $startDate = !empty($input['start_date']) ? $input['start_date'] : null;
     $notes = isset($input['notes']) ? trim($input['notes']) : null;
     $lessonAddress = isset($input['lesson_address']) ? trim($input['lesson_address']) : null;
+    $turkishCenterId = isset($input['turkish_center_id']) ? (int)$input['turkish_center_id'] : null;
 
     if (!$conversationId || !$subjectId || !$lessonLocation || $hourlyRate === null) {
         http_response_code(400);
@@ -37,10 +38,32 @@ try {
         exit();
     }
 
-    if ($lessonLocation !== 'online' && empty($lessonAddress)) {
+    if ($lessonLocation === 'student_home' && empty($lessonAddress)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Fiziksel dersler için adres gereklidir']);
+        echo json_encode(['success' => false, 'error' => 'Öğrenci evinde ders için adres gereklidir']);
         exit();
+    }
+
+    if ($lessonLocation === 'turkish_center' && !$turkishCenterId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Türk kurumunda ders için kurum seçimi gereklidir']);
+        exit();
+    }
+
+    // If Turkish center is selected, get its address
+    if ($lessonLocation === 'turkish_center' && $turkishCenterId) {
+        $stmt = $pdo->prepare("SELECT name, address, city, zip_code FROM turkish_centers WHERE id = ? AND is_active = 1");
+        $stmt->execute([$turkishCenterId]);
+        $center = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$center) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Seçilen Türk kurumu bulunamadı']);
+            exit();
+        }
+
+        // Store center info in lesson_address
+        $lessonAddress = "{$center['name']}, {$center['address']}, {$center['zip_code']} {$center['city']}";
     }
 
     // Konuşma doğrulama
@@ -86,6 +109,7 @@ try {
             subject_id,
             lesson_location,
             lesson_address,
+            turkish_center_id,
             meeting_platform,
             meeting_link,
             hourly_rate,
@@ -94,7 +118,7 @@ try {
             notes,
             status,
             created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
     ");
 
     $insert->execute([
@@ -104,6 +128,7 @@ try {
         $subjectId,
         $lessonLocation,
         $lessonAddress ?: null,
+        $turkishCenterId,
         $meetingPlatform,
         $meetingLink,
         $hourlyRate,

@@ -38,16 +38,20 @@ try {
     }
 
     $stmt = $pdo->prepare("
-        SELECT 
+        SELECT
             la.*,
             s.name as subject_name,
             s.icon as subject_icon,
             sender.full_name as sender_name,
-            recipient.full_name as recipient_name
+            recipient.full_name as recipient_name,
+            tc.name as turkish_center_name,
+            tc.city as turkish_center_city,
+            tc.address as turkish_center_address
         FROM lesson_agreements la
         JOIN subjects s ON s.id = la.subject_id
         JOIN users sender ON sender.id = la.sender_id
         JOIN users recipient ON recipient.id = la.recipient_id
+        LEFT JOIN turkish_centers tc ON tc.id = la.turkish_center_id
         WHERE la.conversation_id = ?
         ORDER BY la.created_at DESC
     ");
@@ -65,6 +69,10 @@ try {
             'subject_icon' => $row['subject_icon'],
             'lesson_location' => $row['lesson_location'],
             'lesson_address' => $row['lesson_address'],
+            'turkish_center_id' => $row['turkish_center_id'] ? (int) $row['turkish_center_id'] : null,
+            'turkish_center_name' => $row['turkish_center_name'],
+            'turkish_center_city' => $row['turkish_center_city'],
+            'turkish_center_address' => $row['turkish_center_address'],
             'meeting_platform' => $row['meeting_platform'],
             'meeting_link' => $row['meeting_link'],
             'hourly_rate' => $row['hourly_rate'] !== null ? (float) $row['hourly_rate'] : null,
