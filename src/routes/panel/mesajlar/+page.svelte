@@ -34,7 +34,13 @@
     // Check for teacher_id query param to start new chat
     const teacherId = $page.url.searchParams.get('teacher_id');
     if (teacherId) {
-      await startNewConversation(parseInt(teacherId));
+      const idNum = parseInt(teacherId);
+      // Öğretmenler diğer öğretmenlerle mesajlaşamaz
+      if ($authStore.user?.role === 'student') {
+        toast.error('Öğretmenler diğer öğretmenlerle mesajlaşamaz');
+      } else {
+        await startNewConversation(idNum);
+      }
     } else if (conversations.length > 0) {
       selectConversation(conversations[0]);
     }

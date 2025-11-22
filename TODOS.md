@@ -10,3 +10,7 @@
   - Kabul edilmiş anlaşmada saat ekle → RewardsPanel’de toplam saat artıyor mu, eşik gelince ödül oluşturuluyor mu, “Ödülü Al” çalışıyor mu.
   - Premium olmayan öğretmen CV yükleyemiyor, premium olan PDF ≤5MB yükleyebiliyor; cv_url güncelleniyor.
 - [ ] **PHP modülü**: `random_bytes` / OpenSSL uzantısı aktif olmalı (Jitsi room id üretimi).
+- [ ] **SPA fallback**: Statik host (Hostinger) için `static/.htaccess` dosyasındaki rewrite kuralını canlıya koy; hard refresh 404’lerini engeller.
+- [ ] **UI doğrulamaları**: 
+  - Mesajlar sayfasında öğretmen rolüyle öğretmen profiline gidildiğinde “Mesaj Gönder” butonu görünmemeli (güncellendi, prod’da doğrula).
+  - CV yükleme butonu premium olmayanlarda dosya seçtirmemeli, sadece “Premium gerekli” butonu ve modal açılmalı (güncellendi, prod’da kontrol et).

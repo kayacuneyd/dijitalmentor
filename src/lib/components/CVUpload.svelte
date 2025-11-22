@@ -12,6 +12,7 @@
   let showPremiumModal = false;
 
   $: user = $authStore.user;
+  $: premiumActive = isPremiumActive();
 
   function isPremiumActive() {
     if (!user?.is_premium) return false;
@@ -23,11 +24,7 @@
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!isPremiumActive()) {
-      showPremiumModal = true;
-      event.target.value = '';
-      return;
-    }
+    if (!premiumActive) return;
 
     if (file.type !== 'application/pdf') {
       toast.error('Sadece PDF dosyaları kabul edilir');
@@ -80,11 +77,23 @@
   </div>
 
   <div class="flex items-center gap-3">
-    <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50">
-      <span>📄</span>
-      <span>{uploading ? 'Yükleniyor...' : 'CV Seç'}</span>
-      <input type="file" accept="application/pdf" class="hidden" on:change={handleFile} disabled={uploading} />
-    </label>
+    {#if premiumActive}
+      <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50">
+        <span>📄</span>
+        <span>{uploading ? 'Yükleniyor...' : 'CV Seç'}</span>
+        <input type="file" accept="application/pdf" class="hidden" on:change={handleFile} disabled={uploading} />
+      </label>
+    {:else}
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+        on:click={() => (showPremiumModal = true)}
+      >
+        <span>🔒</span>
+        <span>Premium gerekli</span>
+      </button>
+    {/if}
+
     {#if currentCvUrl}
       <a href={currentCvUrl} target="_blank" rel="noreferrer" class="text-sm font-semibold text-blue-700 underline">
         Mevcut CV'yi gör

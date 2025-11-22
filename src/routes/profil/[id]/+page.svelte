@@ -229,13 +229,15 @@
           </div>
           
           <div class="grid grid-cols-2 gap-3">
-            <a 
-              href="/panel/mesajlar?teacher_id={teacher.id}"
-              class="bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
-            >
-              <span>✉️</span>
-              Mesaj Gönder
-            </a>
+            {#if userRole !== 'student'}
+              <a 
+                href="/panel/mesajlar?teacher_id={teacher.id}"
+                class="bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+              >
+                <span>✉️</span>
+                Mesaj Gönder
+              </a>
+            {/if}
             
             <button 
               on:click={handleContact}
