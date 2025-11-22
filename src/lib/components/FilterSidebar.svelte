@@ -28,8 +28,9 @@
   
   <!-- Şehir -->
   <div class="mb-4">
-    <label class="block text-sm font-semibold mb-2">Şehir</label>
+    <label class="block text-sm font-semibold mb-2" for="filter-city">Şehir</label>
     <select 
+      id="filter-city"
       bind:value={localFilters.city}
       on:change={applyFilters}
       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -43,8 +44,9 @@
   
   <!-- Ders -->
   <div class="mb-4">
-    <label class="block text-sm font-semibold mb-2">Ders</label>
+    <label class="block text-sm font-semibold mb-2" for="filter-subject">Ders</label>
     <select 
+      id="filter-subject"
       bind:value={localFilters.subject}
       on:change={applyFilters}
       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -60,10 +62,11 @@
   
   <!-- Maksimum Ücret -->
   <div class="mb-4">
-    <label class="block text-sm font-semibold mb-2">
+    <label class="block text-sm font-semibold mb-2" for="filter-max-rate">
       Maksimum Ücret: €{localFilters.max_rate || '∞'}
     </label>
     <input 
+      id="filter-max-rate"
       type="range" 
       min="10" 
       max="50" 

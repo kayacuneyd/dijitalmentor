@@ -75,8 +75,9 @@
   
   <form on:submit|preventDefault={handleRegister} class="space-y-4">
     <div>
-      <label class="block text-sm font-medium mb-1">Ad Soyad</label>
+      <label class="block text-sm font-medium mb-1" for="register-full-name">Ad Soyad</label>
       <input 
+        id="register-full-name"
         type="text" 
         bind:value={formData.full_name}
         class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -85,8 +86,9 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium mb-1">Telefon Numarası</label>
+      <label class="block text-sm font-medium mb-1" for="register-phone">Telefon Numarası</label>
       <input 
+        id="register-phone"
         type="tel" 
         bind:value={formData.phone}
         placeholder="+49..."
@@ -96,8 +98,9 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium mb-1">Şehir</label>
+      <label class="block text-sm font-medium mb-1" for="register-city">Şehir</label>
       <input 
+        id="register-city"
         type="text" 
         bind:value={formData.city}
         class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -107,8 +110,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Posta Kodu (PLZ)</label>
+      <label class="block text-sm font-medium mb-1" for="register-zip">Posta Kodu (PLZ)</label>
       <input 
+        id="register-zip"
         type="text" 
         bind:value={formData.zip_code}
         class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -118,8 +122,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Şifre</label>
+      <label class="block text-sm font-medium mb-1" for="register-password">Şifre</label>
       <input 
+        id="register-password"
         type="password" 
         bind:value={formData.password}
         class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"

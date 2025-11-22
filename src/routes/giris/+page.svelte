@@ -39,8 +39,9 @@
   
   <form on:submit|preventDefault={handleLogin} class="space-y-4">
     <div>
-      <label class="block text-sm font-medium mb-1">Telefon Numarası</label>
+      <label class="block text-sm font-medium mb-1" for="login-phone">Telefon Numarası</label>
       <input 
+        id="login-phone"
         type="tel" 
         bind:value={phone}
         placeholder="+49..."
@@ -50,8 +51,9 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium mb-1">Şifre</label>
+      <label class="block text-sm font-medium mb-1" for="login-password">Şifre</label>
       <input 
+        id="login-password"
         type="password" 
         bind:value={password}
         class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"

@@ -53,8 +53,8 @@
   
   <form on:submit|preventDefault={handleSubmit} class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
     <div>
-      <label class="block text-sm font-medium mb-2">Ders Konusu</label>
-      <select bind:value={formData.subject_id} class="w-full border rounded-lg px-4 py-2" required>
+      <label class="block text-sm font-medium mb-2" for="request-subject">Ders Konusu</label>
+      <select id="request-subject" bind:value={formData.subject_id} class="w-full border rounded-lg px-4 py-2" required>
         <option value="">Seçiniz</option>
         {#each subjects as subject}
           <option value={subject.id}>{subject.name}</option>
@@ -63,8 +63,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">Başlık</label>
+      <label class="block text-sm font-medium mb-2" for="request-title">Başlık</label>
       <input 
+        id="request-title"
         type="text" 
         bind:value={formData.title} 
         placeholder="Örn: Lise 2 Matematik Desteği"
@@ -74,8 +75,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">Şehir</label>
+      <label class="block text-sm font-medium mb-2" for="request-city">Şehir</label>
       <input 
+        id="request-city"
         type="text" 
         bind:value={formData.city} 
         placeholder="Örn: Berlin"
@@ -85,8 +87,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">Bütçe Aralığı (Saatlik)</label>
+      <label class="block text-sm font-medium mb-2" for="request-budget">Bütçe Aralığı (Saatlik)</label>
       <input 
+        id="request-budget"
         type="text" 
         bind:value={formData.budget_range} 
         placeholder="Örn: 20-30€"
@@ -95,8 +98,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">Detaylı Açıklama</label>
+      <label class="block text-sm font-medium mb-2" for="request-description">Detaylı Açıklama</label>
       <textarea 
+        id="request-description"
         bind:value={formData.description} 
         rows="4"
         placeholder="Beklentilerinizi ve öğrencinin durumunu kısaca anlatın..."

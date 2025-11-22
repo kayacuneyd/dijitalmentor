@@ -19,14 +19,13 @@
 </script>
 
 <div class="relative">
-{#if canAccessProfile}
-  <a
-    href="/profil/{teacher.id}"
-    class="block bg-white rounded-card shadow-card hover:shadow-card-hover transition-all border border-gray-100 p-6 group"
+  <svelte:element
+    this={canAccessProfile ? 'a' : 'div'}
+    href={canAccessProfile ? `/profil/${teacher.id}` : undefined}
+    class={`block bg-white rounded-card shadow-card border border-gray-100 p-6 group ${
+      canAccessProfile ? 'hover:shadow-card-hover transition-all' : 'opacity-50 cursor-not-allowed'
+    }`}
   >
-{:else}
-  <div class="block bg-white rounded-card shadow-card border border-gray-100 p-6 opacity-50 cursor-not-allowed">
-{/if}
   <div class="flex gap-4">
     <!-- Avatar -->
     <div class="flex-shrink-0">
@@ -116,12 +115,7 @@
       {/if}
     </div>
   </div>
-
-{#if canAccessProfile}
-  </a>
-{:else}
-  </div>
-{/if}
+  </svelte:element>
 
 {#if !canAccessProfile}
   <!-- Overlay for teachers -->

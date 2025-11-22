@@ -155,8 +155,9 @@
           <form on:submit|preventDefault={handleSave} class="space-y-4">
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-full-name">Ad Soyad</label>
                 <input 
+                  id="settings-full-name"
                   type="text" 
                   bind:value={formData.full_name}
                   class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" 
@@ -164,8 +165,9 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-email">E-posta</label>
                 <input 
+                  id="settings-email"
                   type="email" 
                   bind:value={formData.email}
                   placeholder="ornek@email.com"
@@ -174,8 +176,9 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Şehir</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-city">Şehir</label>
                 <input 
+                  id="settings-city"
                   type="text" 
                   bind:value={formData.city}
                   class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" 
@@ -183,8 +186,9 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Posta Kodu</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-zip">Posta Kodu</label>
                 <input 
+                  id="settings-zip"
                   type="text" 
                   bind:value={formData.zip_code}
                   class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" 
@@ -194,8 +198,9 @@
             
             {#if user.role === 'student'}
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hakkımda</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-bio">Hakkımda</label>
                 <textarea 
+                  id="settings-bio"
                   bind:value={formData.bio}
                   rows="4"
                   placeholder="Kendinizi tanıtın, deneyimlerinizi ve öğretim yaklaşımınızı paylaşın..."
@@ -205,8 +210,9 @@
               
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Üniversite</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-university">Üniversite</label>
                   <input 
+                    id="settings-university"
                     type="text" 
                     bind:value={formData.university}
                     class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" 
@@ -214,8 +220,9 @@
                 </div>
                 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Bölüm</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-department">Bölüm</label>
                   <input 
+                    id="settings-department"
                     type="text" 
                     bind:value={formData.department}
                     class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" 
@@ -223,8 +230,9 @@
                 </div>
                 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Mezuniyet Yılı</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-graduation">Mezuniyet Yılı</label>
                   <input 
+                    id="settings-graduation"
                     type="number" 
                     bind:value={formData.graduation_year}
                     min="2000"
@@ -234,8 +242,9 @@
                 </div>
                 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Deneyim (Yıl)</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-experience">Deneyim (Yıl)</label>
                   <input 
+                    id="settings-experience"
                     type="number" 
                     bind:value={formData.experience_years}
                     min="0"
@@ -245,8 +254,9 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Saatlik Ücret (€)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-rate">Saatlik Ücret (€)</label>
                 <input 
+                  id="settings-rate"
                   type="number" 
                   bind:value={formData.hourly_rate}
                   min="0"
@@ -274,8 +284,9 @@
           <form on:submit|preventDefault={handlePasswordChange} class="space-y-4">
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Yeni Şifre</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-new-password">Yeni Şifre</label>
                 <input 
+                  id="settings-new-password"
                   type="password" 
                   bind:value={newPassword}
                   minlength="6"
@@ -284,8 +295,9 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Şifre Tekrar</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="settings-confirm-password">Şifre Tekrar</label>
                 <input 
+                  id="settings-confirm-password"
                   type="password" 
                   bind:value={confirmPassword}
                   minlength="6"

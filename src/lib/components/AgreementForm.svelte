@@ -82,8 +82,9 @@
 
   <div class="grid md:grid-cols-2 gap-3">
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Ders</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-subject">Ders</label>
       <select
+        id="agreement-subject"
         class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
         bind:value={form.subject_id}
       >
@@ -98,7 +99,7 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Lokasyon</label>
+      <p class="block text-sm font-medium text-gray-700 mb-1">Lokasyon</p>
       <div class="grid grid-cols-3 gap-2">
         <button
           type="button"
@@ -120,8 +121,9 @@
 
     {#if !isOnline}
       <div class="md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-address">Adres</label>
         <input
+          id="agreement-address"
           type="text"
           class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
           placeholder="Adres veya dernek bilgisi"
@@ -131,8 +133,9 @@
     {/if}
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Saatlik Ücret (€)</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-rate">Saatlik Ücret (€)</label>
       <input
+        id="agreement-rate"
         type="number"
         min="0"
         step="0.5"
@@ -142,8 +145,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Haftalık Saat</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-hours">Haftalık Saat</label>
       <input
+        id="agreement-hours"
         type="number"
         min="1"
         class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
@@ -152,8 +156,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Başlangıç Tarihi</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-start">Başlangıç Tarihi</label>
       <input
+        id="agreement-start"
         type="date"
         class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
         bind:value={form.start_date}
@@ -161,8 +166,9 @@
     </div>
 
     <div class="md:col-span-2">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Notlar</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="agreement-notes">Notlar</label>
       <textarea
+        id="agreement-notes"
         rows="3"
         class="w-full border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
         placeholder="Örn: Haftada 2 saat online matematik..."
