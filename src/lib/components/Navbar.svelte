@@ -48,6 +48,7 @@
       
       <!-- Mobile Menu Button -->
       <button 
+        aria-label="Menüyü aç/kapat"
         class="md:hidden"
         on:click={() => mobileMenuOpen = !mobileMenuOpen}
       >
