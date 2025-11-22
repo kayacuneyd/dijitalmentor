@@ -2,6 +2,7 @@
   import { authStore } from '$lib/stores/auth.js';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import RewardsPanel from '$lib/components/RewardsPanel.svelte';
   
   $: user = $authStore.user;
   
@@ -148,6 +149,8 @@
              </div>
           {/if}
         </div>
+        
+        <RewardsPanel />
         
         <!-- Support Card -->
         <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-2xl shadow-lg text-white">

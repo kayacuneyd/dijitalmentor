@@ -4,6 +4,9 @@
   import { api } from '$lib/utils/api.js';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import AgreementForm from '$lib/components/AgreementForm.svelte';
+  import AgreementCard from '$lib/components/AgreementCard.svelte';
+  import { toast } from '$lib/stores/toast.js';
 
   let conversations = [];
   let activeConversation = null;
@@ -11,6 +14,11 @@
   let newMessage = '';
   let loading = true;
   let sending = false;
+  let agreements = [];
+  let agreementsLoading = false;
+  let showAgreementForm = false;
+  let subjects = [];
+  let subjectsLoading = false;
 
   $: user = $authStore.user;
 
@@ -31,10 +39,13 @@
       selectConversation(conversations[0]);
     }
 
+    loadSubjects();
+
     // Auto-refresh every 30 seconds
     refreshInterval = setInterval(() => {
       if (activeConversation) {
         loadMessages(activeConversation.id, true);
+        loadAgreements(activeConversation.id, true);
       }
       loadConversations();
     }, 30000);
@@ -58,6 +69,7 @@
   async function selectConversation(conv) {
     activeConversation = conv;
     await loadMessages(conv.id);
+    await loadAgreements(conv.id);
   }
 
   async function loadMessages(conversationId, silent = false) {
@@ -72,6 +84,35 @@
       }, 0);
     } catch (e) {
       if (!silent) console.error(e);
+    }
+  }
+
+  async function loadSubjects() {
+    if (subjectsLoading || subjects.length) return;
+    subjectsLoading = true;
+    try {
+      const res = await api.get('/subjects/list.php');
+      subjects = res.data || [];
+    } catch (e) {
+      console.error(e);
+    } finally {
+      subjectsLoading = false;
+    }
+  }
+
+  async function loadAgreements(conversationId, silent = false) {
+    if (!conversationId) return;
+    agreementsLoading = true;
+    try {
+      const res = await api.get(`/agreements/list.php?conversation_id=${conversationId}`);
+      agreements = res.data || [];
+    } catch (e) {
+      if (!silent) {
+        console.error(e);
+        toast.error('Onay formları yüklenemedi');
+      }
+    } finally {
+      agreementsLoading = false;
     }
   }
 
@@ -128,6 +169,26 @@
       alert('Mesaj gönderilemedi. Lütfen tekrar deneyin.');
     } finally {
       sending = false;
+    }
+  }
+
+  function handleAgreementSuccess() {
+    showAgreementForm = false;
+    if (activeConversation) {
+      loadAgreements(activeConversation.id);
+    }
+  }
+
+  function handleAgreementResponded() {
+    if (activeConversation) {
+      loadAgreements(activeConversation.id);
+    }
+  }
+
+  function handleHoursLogged(event) {
+    const rewards = event.detail?.new_rewards || [];
+    if (rewards.length) {
+      toast.success(`Tebrikler! ${rewards.length} yeni ödül açıldı.`);
     }
   }
 </script>
@@ -214,6 +275,47 @@
                 </div>
               </div>
             {/each}
+          {/if}
+        </div>
+
+        <!-- Agreements -->
+        <div class="bg-white border-t border-gray-100 px-4 py-3 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-semibold text-gray-900">Onay Formları</h4>
+              <p class="text-xs text-gray-500">Ders detayları ve Jitsi linkleri</p>
+            </div>
+            <button
+              class="px-3 py-1.5 text-sm font-semibold rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition"
+              on:click={() => showAgreementForm = !showAgreementForm}
+            >
+              {showAgreementForm ? 'Formu Gizle' : 'Onay Formu Gönder'}
+            </button>
+          </div>
+
+          {#if showAgreementForm}
+            <AgreementForm
+              conversationId={activeConversation.id}
+              recipientId={activeConversation.other_user.id}
+              subjects={subjects}
+              on:success={handleAgreementSuccess}
+            />
+          {/if}
+
+          {#if agreementsLoading}
+            <div class="text-sm text-gray-500">Onay formları yükleniyor...</div>
+          {:else if agreements.length === 0}
+            <div class="text-sm text-gray-500">Henüz onay formu yok.</div>
+          {:else}
+            <div class="grid gap-3">
+              {#each agreements as agreement}
+                <AgreementCard
+                  agreement={agreement}
+                  on:responded={handleAgreementResponded}
+                  on:hoursLogged={handleHoursLogged}
+                />
+              {/each}
+            </div>
           {/if}
         </div>
 

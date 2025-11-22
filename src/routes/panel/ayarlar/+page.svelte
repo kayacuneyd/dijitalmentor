@@ -4,12 +4,12 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { get } from 'svelte/store';
+  import CVUpload from '$lib/components/CVUpload.svelte';
 
   let user = null;
   let loading = false;
   let saving = false;
   let uploadingAvatar = false;
-  let uploadingCV = false;
   let showPremiumModal = false;
   
   let formData = {
@@ -73,29 +73,6 @@
     user.avatar_url = URL.createObjectURL(file);
     toast.success('Profil fotoğrafı güncellendi.');
     uploadingAvatar = false;
-  }
-  
-  async function handleCVUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    // Check premium status
-    if (!user?.is_premium) {
-      showPremiumModal = true;
-      event.target.value = '';
-      return;
-    }
-    
-    // Validate file size (2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Dosya çok büyük. Maksimum 2MB olmalı.');
-      return;
-    }
-    
-    uploadingCV = true;
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success('CV başarıyla yüklendi.');
-    uploadingCV = false;
   }
   
   async function handlePasswordChange() {
@@ -331,34 +308,10 @@
 
         <!-- CV Upload Section (Teachers Only) -->
         {#if user.role === 'student'}
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <h2 class="text-lg font-semibold text-gray-900">CV Yükle</h2>
-                <p class="text-sm text-gray-500 mt-1">Premium özellik - Profesyonel CV'nizi paylaşın</p>
-              </div>
-              {#if !user.is_premium}
-                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">Premium</span>
-              {/if}
-            </div>
-            
-            <div class="flex items-center gap-4">
-              <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-                <span>📄</span>
-                <span>{uploadingCV ? 'Yükleniyor...' : 'CV Seç'}</span>
-                <input type="file" accept=".pdf,.doc,.docx" on:change={handleCVUpload} class="hidden" disabled={uploadingCV} />
-              </label>
-              <p class="text-sm text-gray-500">PDF, DOC veya DOCX. Maksimum 2MB.</p>
-            </div>
-            
-            {#if !user.is_premium}
-              <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p class="text-sm text-yellow-800">
-                  <span class="font-semibold">💡 Not:</span> CV yükleme özelliği premium üyeler içindir. Premium üye olmak için yukarıdaki "Premium Üye Ol" butonuna tıklayın.
-                </p>
-              </div>
-            {/if}
-          </div>
+          <CVUpload
+            currentCvUrl={user?.cv_url}
+            on:uploaded={(event) => user = { ...user, cv_url: event.detail?.cv_url || user.cv_url }}
+          />
         {/if}
 
         <!-- Premium Membership Section -->

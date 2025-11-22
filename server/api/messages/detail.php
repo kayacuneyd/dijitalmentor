@@ -7,7 +7,7 @@ require_once '../config/auth.php';
 $user = requireAuth(['student', 'parent']);
 
 try {
-    $userId = $user['id'];
+    $userId = isset($user['user_id']) ? (int) $user['user_id'] : (int) ($user['id'] ?? 0);
     $userRole = $user['role'];
 
     // Get conversation_id from query parameter

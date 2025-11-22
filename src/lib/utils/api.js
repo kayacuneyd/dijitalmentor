@@ -204,14 +204,21 @@ class APIClient {
     }
 
     const { token } = get(authStore);
-    
+    const isFormData = options.body instanceof FormData;
+
+    const headers = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers
+    };
+
+    // Only set JSON content-type when not sending FormData and no explicit content-type was provided
+    if (!isFormData && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     const config = {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers
-      }
+      headers
     };
     
     try {
@@ -235,6 +242,13 @@ class APIClient {
     return this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify(data)
+    });
+  }
+
+  postForm(endpoint, formData) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: formData
     });
   }
 }

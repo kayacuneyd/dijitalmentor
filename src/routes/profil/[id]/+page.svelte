@@ -95,24 +95,56 @@
               </h1>
               
               <div class="space-y-2 text-gray-600 mb-4">
-                <p class="flex items-center gap-2">
-                  <span>🎓</span>
-                  <span>{teacher.university} - {teacher.department}</span>
-                </p>
+                {#if teacher.university || teacher.department}
+                  <p class="flex items-center gap-2">
+                    <span>🎓</span>
+                    <span>
+                      {#if teacher.university && teacher.department}
+                        {teacher.university} - {teacher.department}
+                      {:else if teacher.university}
+                        {teacher.university}
+                      {:else}
+                        {teacher.department}
+                      {/if}
+                    </span>
+                  </p>
+                {:else}
+                  <p class="flex items-center gap-2 text-gray-400 italic">
+                    <span>🎓</span>
+                    <span>Üniversite bilgisi mevcut değil</span>
+                  </p>
+                {/if}
+
                 {#if teacher.graduation_year}
                   <p class="flex items-center gap-2">
                     <span>📅</span>
                     <span>Mezuniyet: {teacher.graduation_year}</span>
                   </p>
                 {/if}
-                <p class="flex items-center gap-2">
-                  <span>📍</span>
-                  <span>{teacher.city}, PLZ: {teacher.zip_code}</span>
-                </p>
-                <p class="flex items-center gap-2">
-                  <span>⏱️</span>
-                  <span>{teacher.experience_years} yıl deneyim</span>
-                </p>
+
+                {#if teacher.city || teacher.zip_code}
+                  <p class="flex items-center gap-2">
+                    <span>📍</span>
+                    <span>{teacher.city || 'Şehir belirtilmemiş'}{#if teacher.zip_code}, PLZ: {teacher.zip_code}{/if}</span>
+                  </p>
+                {:else}
+                  <p class="flex items-center gap-2 text-gray-400 italic">
+                    <span>📍</span>
+                    <span>Konum bilgisi mevcut değil</span>
+                  </p>
+                {/if}
+
+                {#if teacher.experience_years}
+                  <p class="flex items-center gap-2">
+                    <span>⏱️</span>
+                    <span>{teacher.experience_years} yıl deneyim</span>
+                  </p>
+                {:else}
+                  <p class="flex items-center gap-2 text-gray-400 italic">
+                    <span>⏱️</span>
+                    <span>Deneyim bilgisi mevcut değil</span>
+                  </p>
+                {/if}
               </div>
               
               <!-- Rating -->

@@ -19,20 +19,36 @@ try {
     // Fetch basic info
     $stmt = $pdo->prepare("
         SELECT 
-            u.id, u.full_name, u.avatar_url, u.is_verified, u.phone,
+            u.id, u.full_name, u.avatar_url, u.is_verified, u.phone, u.approval_status,
             tp.university, tp.department, tp.graduation_year, tp.bio,
             tp.city, tp.zip_code, tp.hourly_rate, tp.video_intro_url,
-            tp.experience_years, tp.rating_avg, tp.review_count
+            tp.experience_years, tp.rating_avg, tp.review_count, tp.cv_url
         FROM users u
         JOIN teacher_profiles tp ON u.id = tp.user_id
         WHERE u.id = ? AND u.role = 'student' AND u.is_active = 1
     ");
     $stmt->execute([$id]);
-    $teacher = $stmt->fetch();
+    $teacher = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$teacher) {
         http_response_code(404);
         die(json_encode(['success' => false, 'error' => 'Teacher not found']));
+    }
+
+    // Temizle: null/boş değerleri null yap
+    $nullableFields = ['university', 'department', 'bio', 'city', 'zip_code', 'video_intro_url', 'cv_url'];
+    foreach ($nullableFields as $field) {
+        if (!isset($teacher[$field]) || $teacher[$field] === '' || $teacher[$field] === null) {
+            $teacher[$field] = null;
+        }
+    }
+
+    if (empty($teacher['graduation_year'])) {
+        $teacher['graduation_year'] = null;
+    }
+
+    if ($teacher['experience_years'] === '' || $teacher['experience_years'] === null) {
+        $teacher['experience_years'] = null;
     }
 
     // Fetch subjects
