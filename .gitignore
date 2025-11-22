@@ -47,3 +47,5 @@ capacitor.config.json
 # Temporary files
 *.tmp
 .temp/
+deploy_key.pub
+deploy_key
