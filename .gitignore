@@ -8,6 +8,7 @@ build/
 .svelte-kit/
 dist/
 .output/
+.vercel/
 
 # Environment variables
 .env
