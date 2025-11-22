@@ -341,27 +341,34 @@
 
         <!-- Agreements -->
         <div class="bg-white border-t border-gray-100 px-4 py-3 space-y-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <h4 class="text-sm font-semibold text-gray-900">Onay Formları</h4>
-              <p class="text-xs text-gray-500">Ders detayları ve Jitsi linkleri</p>
-            </div>
+          <div class="border border-blue-100 rounded-xl overflow-hidden">
             <button
-              class="px-3 py-1.5 text-sm font-semibold rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition"
+              class="w-full flex items-center justify-between px-4 py-3 text-left bg-blue-50 hover:bg-blue-100 transition"
               on:click={() => showAgreementForm = !showAgreementForm}
             >
-              {showAgreementForm ? 'Formu Gizle' : 'Onay Formu Gönder'}
+              <div>
+                <h4 class="text-sm font-semibold text-gray-900">Onay Formu Gönder</h4>
+                <p class="text-xs text-gray-600">Ders detaylarını paylaşın, Jitsi linki oluşturun</p>
+              </div>
+              <svg class={`w-5 h-5 text-blue-600 transition-transform ${showAgreementForm ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
+            <div
+              class={`overflow-hidden transition-all duration-300 ${showAgreementForm ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}
+            >
+              {#if showAgreementForm}
+                <div class="p-4">
+                  <AgreementForm
+                    conversationId={activeConversation.id}
+                    recipientId={activeConversation.other_user.id}
+                    subjects={subjects}
+                    on:success={handleAgreementSuccess}
+                  />
+                </div>
+              {/if}
+            </div>
           </div>
-
-          {#if showAgreementForm}
-            <AgreementForm
-              conversationId={activeConversation.id}
-              recipientId={activeConversation.other_user.id}
-              subjects={subjects}
-              on:success={handleAgreementSuccess}
-            />
-          {/if}
 
           {#if agreementsLoading}
             <div class="text-sm text-gray-500">Onay formları yükleniyor...</div>

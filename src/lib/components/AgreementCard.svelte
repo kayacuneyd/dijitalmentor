@@ -26,6 +26,14 @@
     online: 'Online'
   };
 
+  let expanded = false;
+  let prevAgreementId;
+
+  $: if (agreement?.id !== prevAgreementId) {
+    prevAgreementId = agreement?.id;
+    expanded = agreement?.status === 'pending';
+  }
+
   async function respond(status) {
     if (responding) return;
     responding = true;
@@ -74,8 +82,11 @@
   }
 </script>
 
-<div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm space-y-3">
-  <div class="flex items-start justify-between gap-3">
+<div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+  <button
+    class="w-full flex items-start justify-between gap-3 p-4 text-left bg-white hover:bg-gray-50 transition"
+    on:click={() => expanded = !expanded}
+  >
     <div>
       <div class="text-sm text-gray-500 flex items-center gap-2">
         <span class="text-lg">{subjectIcon}</span>
@@ -87,108 +98,117 @@
         Gönderen: {agreement.sender_name} · Alıcı: {agreement.recipient_name}
       </div>
     </div>
-    <span class={`px-3 py-1 rounded-full text-xs font-semibold ${
-      agreement.status === 'accepted'
-        ? 'bg-green-50 text-green-700 border border-green-100'
-        : agreement.status === 'pending'
-        ? 'bg-yellow-50 text-yellow-700 border border-yellow-100'
-        : 'bg-gray-100 text-gray-600 border border-gray-200'
-    }`}>
-      {agreement.status}
-    </span>
-  </div>
-
-  <div class="grid md:grid-cols-3 gap-3 text-sm text-gray-700">
-    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
-      <div class="text-xs text-gray-500">Ücret</div>
-      <div class="font-semibold">€{agreement.hourly_rate} / saat</div>
+    <div class="flex items-center gap-2">
+      <span class={`px-3 py-1 rounded-full text-xs font-semibold ${
+        agreement.status === 'accepted'
+          ? 'bg-green-50 text-green-700 border border-green-100'
+          : agreement.status === 'pending'
+          ? 'bg-yellow-50 text-yellow-700 border border-yellow-100'
+          : 'bg-gray-100 text-gray-600 border border-gray-200'
+      }`}>
+        {agreement.status}
+      </span>
+      <svg class={`w-5 h-5 text-gray-500 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
     </div>
-    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
-      <div class="text-xs text-gray-500">Haftalık</div>
-      <div class="font-semibold">{agreement.hours_per_week} saat</div>
-    </div>
-    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
-      <div class="text-xs text-gray-500">Başlangıç</div>
-      <div class="font-semibold">{agreement.start_date || 'Belirtilmedi'}</div>
-    </div>
-  </div>
+  </button>
 
-  {#if agreement.lesson_address && agreement.lesson_location !== 'online'}
-    <div class="text-sm text-gray-700">
-      <span class="font-semibold">Adres:</span> {agreement.lesson_address}
-    </div>
-  {/if}
-
-  {#if agreement.notes}
-    <div class="text-sm text-gray-700">
-      <span class="font-semibold">Not:</span> {agreement.notes}
-    </div>
-  {/if}
-
-  {#if agreement.meeting_link}
-    <div class="flex items-center justify-between gap-3 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-      <div class="text-sm text-blue-800 font-semibold">Jitsi Linki hazır</div>
-      <a
-        class="text-sm font-semibold text-blue-700 underline"
-        href={agreement.meeting_link}
-        target="_blank"
-        rel="noreferrer"
-      >
-        Dersi başlat
-      </a>
-    </div>
-  {/if}
-
-  <div class="flex flex-wrap gap-2">
-    {#if canRespond}
-      <button
-        class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50"
-        on:click={() => respond('accepted')}
-        disabled={responding}
-      >Kabul Et</button>
-      <button
-        class="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition disabled:opacity-50"
-        on:click={() => respond('rejected')}
-        disabled={responding}
-      >Reddet</button>
-    {/if}
-    {#if canCancel}
-      <button
-        class="px-3 py-2 bg-gray-100 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-200 transition disabled:opacity-50"
-        on:click={() => respond('cancelled')}
-        disabled={responding}
-      >İptal Et</button>
-    {/if}
-  </div>
-
-  {#if agreement.status === 'accepted'}
-    <div class="border-t border-dashed border-gray-200 pt-3 space-y-2">
-      <div class="text-sm font-semibold text-gray-900">Ders Saati Kaydet (Ödül takibi)</div>
-      <div class="grid md:grid-cols-3 gap-2">
-        <input
-          type="number"
-          min="0.5"
-          step="0.5"
-          placeholder="Saat"
-          class="border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-          bind:value={hoursInput}
-        />
-        <input
-          type="text"
-          placeholder="Not (opsiyonel)"
-          class="border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 md:col-span-2"
-          bind:value={hoursNote}
-        />
+  <div class={`px-4 pb-4 space-y-3 transition-all duration-300 ${expanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+    {#if expanded}
+      <div class="grid md:grid-cols-3 gap-3 text-sm text-gray-700">
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="text-xs text-gray-500">Ücret</div>
+          <div class="font-semibold">€{agreement.hourly_rate} / saat</div>
+        </div>
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="text-xs text-gray-500">Haftalık</div>
+          <div class="font-semibold">{agreement.hours_per_week} saat</div>
+        </div>
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div class="text-xs text-gray-500">Başlangıç</div>
+          <div class="font-semibold">{agreement.start_date || 'Belirtilmedi'}</div>
+        </div>
       </div>
-      <div class="flex justify-end">
-        <button
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50"
-          on:click={logHours}
-          disabled={loggingHours}
-        >
-          {loggingHours ? 'Kaydediliyor...' : 'Saat Ekle'}
-        </button>
+
+      {#if agreement.lesson_address && agreement.lesson_location !== 'online'}
+        <div class="text-sm text-gray-700">
+          <span class="font-semibold">Adres:</span> {agreement.lesson_address}
+        </div>
+      {/if}
+
+      {#if agreement.notes}
+        <div class="text-sm text-gray-700">
+          <span class="font-semibold">Not:</span> {agreement.notes}
+        </div>
+      {/if}
+
+      {#if agreement.meeting_link}
+        <div class="flex items-center justify-between gap-3 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+          <div class="text-sm text-blue-800 font-semibold">Jitsi Linki hazır</div>
+          <a
+            class="text-sm font-semibold text-blue-700 underline"
+            href={agreement.meeting_link}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Dersi başlat
+          </a>
+        </div>
+      {/if}
+
+      <div class="flex flex-wrap gap-2">
+        {#if canRespond}
+          <button
+            class="px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50"
+            on:click={() => respond('accepted')}
+            disabled={responding}
+          >Kabul Et</button>
+          <button
+            class="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition disabled:opacity-50"
+            on:click={() => respond('rejected')}
+            disabled={responding}
+          >Reddet</button>
+        {/if}
+        {#if canCancel}
+          <button
+            class="px-3 py-2 bg-gray-100 text-gray-800 rounded-lg text-sm font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+            on:click={() => respond('cancelled')}
+            disabled={responding}
+          >İptal Et</button>
+        {/if}
       </div>
-    </div>
-  {/if}
+
+      {#if agreement.status === 'accepted'}
+        <div class="border-t border-dashed border-gray-200 pt-3 space-y-2">
+          <div class="text-sm font-semibold text-gray-900">Ders Saati Kaydet (Ödül takibi)</div>
+          <div class="grid md:grid-cols-3 gap-2">
+            <input
+              type="number"
+              min="0.5"
+              step="0.5"
+              placeholder="Saat"
+              class="border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              bind:value={hoursInput}
+            />
+            <input
+              type="text"
+              placeholder="Not (opsiyonel)"
+              class="border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 md:col-span-2"
+              bind:value={hoursNote}
+            />
+          </div>
+          <div class="flex justify-end">
+            <button
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+              on:click={logHours}
+              disabled={loggingHours}
+            >
+              {loggingHours ? 'Kaydediliyor...' : 'Saat Ekle'}
+            </button>
+          </div>
+        </div>
+      {/if}
+    {/if}
+  </div>
 </div>
