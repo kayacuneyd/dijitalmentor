@@ -35,11 +35,17 @@
     const conversationId = $page.url.searchParams.get('conversation_id');
     if (conversationId) {
       const idNum = parseInt(conversationId);
+      console.log('Looking for conversation ID:', idNum);
+      console.log('Available conversations:', conversations);
       const conv = conversations.find(c => c.id === idNum);
+      console.log('Found conversation:', conv);
       if (conv) {
-        selectConversation(conv);
+        await selectConversation(conv);
       } else if (conversations.length > 0) {
-        selectConversation(conversations[0]);
+        console.warn('Conversation not found, selecting first one');
+        await selectConversation(conversations[0]);
+      } else {
+        console.error('No conversations available');
       }
     }
     // Check for teacher_id query param to start new chat
@@ -78,8 +84,9 @@
     try {
       const res = await api.get('/messages/list.php');
       conversations = res.data;
+      console.log('Loaded conversations:', conversations);
     } catch (e) {
-      console.error(e);
+      console.error('Error loading conversations:', e);
     } finally {
       loading = false;
     }
