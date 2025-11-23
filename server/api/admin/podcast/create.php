@@ -74,7 +74,7 @@ try {
     // Trigger GitHub Actions workflow if requested
     if ($triggerGeneration) {
         $githubToken = getenv('GITHUB_TOKEN');
-        $githubRepo = getenv('GITHUB_REPO') ?: 'thomasmuentzer/dijitalmentor';
+        $githubRepo = getenv('GITHUB_REPO') ?: 'kayacuneyd/dijitalmentor';
 
         if ($githubToken) {
             $workflowDispatch = triggerGithubWorkflow($githubToken, $githubRepo, $id, $topicPrompt, $title, $description);
@@ -118,7 +118,8 @@ try {
 }
 
 // Helper functions
-function generateSlug($text) {
+function generateSlug($text)
+{
     // Turkish character normalization
     $text = mb_strtolower($text, 'UTF-8');
     $text = str_replace(
@@ -135,7 +136,8 @@ function generateSlug($text) {
     return $text;
 }
 
-function triggerGithubWorkflow($token, $repo, $episodeId, $topic, $title, $description) {
+function triggerGithubWorkflow($token, $repo, $episodeId, $topic, $title, $description)
+{
     $url = "https://api.github.com/repos/{$repo}/actions/workflows/podcast-pipeline.yml/dispatches";
 
     $payload = [

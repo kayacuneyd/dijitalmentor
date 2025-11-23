@@ -44,7 +44,7 @@ try {
         echo "WARNING: GITHUB_TOKEN is missing. Automatic generation will NOT work.\n";
     } else {
         // Verify GitHub Token & Repo
-        $repo = getenv('GITHUB_REPO') ?: 'thomasmuentzer/dijitalmentor';
+        $repo = getenv('GITHUB_REPO') ?: 'kayacuneyd/dijitalmentor';
         echo "Checking GitHub Repo: $repo\n";
 
         $ch = curl_init("https://api.github.com/repos/$repo");
