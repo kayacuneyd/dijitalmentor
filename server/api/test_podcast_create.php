@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/config/db.php';
 
 // Mock Admin User (we need to bypass auth or simulate it, but for this test we'll just test the DB insert part if possible, 
 // OR we can try to hit the endpoint with a valid token if we had one. 
