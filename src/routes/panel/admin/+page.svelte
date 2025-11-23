@@ -5,6 +5,7 @@
   import { api } from '$lib/utils/api.js';
   import { toast } from '$lib/stores/toast.js';
   import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
+  import PodcastManagement from '$lib/components/admin/PodcastManagement.svelte';
   import { marked } from 'marked';
 
   let activeTab = 'teachers';
@@ -431,6 +432,7 @@ let activeSupportFilter = '';
         { id: 'reviews', label: 'Yorum Moderasyon' },
         { id: 'announcements', label: 'Duyurular & Ayın Ödülü' },
         { id: 'blog', label: 'Blog Yönetimi' },
+        { id: 'podcast', label: '🎙️ Podcast Yönetimi' },
         { id: 'rewards', label: 'Ödül & Saat Takibi' }
       ] as tab}
         <button
@@ -913,6 +915,8 @@ let activeSupportFilter = '';
           </div>
         {/if}
       </section>
+    {:else if activeTab === 'podcast'}
+      <PodcastManagement />
     {/if}
   </div>
 {/if}

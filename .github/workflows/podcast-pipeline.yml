@@ -1,0 +1,114 @@
+name: Podcast Generation Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      episode_id:
+        description: 'Database episode ID'
+        required: true
+        type: string
+      topic_prompt:
+        description: 'Topic/subject for the podcast'
+        required: true
+        type: string
+      title:
+        description: 'Episode title (optional, will be AI-generated if empty)'
+        required: false
+        type: string
+        default: ''
+      description:
+        description: 'Episode description (optional, will be AI-generated if empty)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  generate-podcast:
+    name: Generate Podcast Episode
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: automation/podcast/package-lock.json
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version
+
+      - name: Install dependencies
+        working-directory: automation/podcast
+        run: npm ci
+
+      - name: Run podcast generation
+        working-directory: automation/podcast
+        env:
+          # AI Services
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+
+          # Cloudflare R2
+          CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
+          CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          CLOUDFLARE_R2_BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
+          CLOUDFLARE_R2_PUBLIC_URL: ${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}
+
+          # YouTube
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+
+          # Webhook
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+
+          # GitHub tracking
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+          # Music
+          BACKGROUND_MUSIC_URL: ${{ secrets.BACKGROUND_MUSIC_URL }}
+          BACKGROUND_MUSIC_VOLUME: '0.1'
+
+          # Podcast metadata
+          PODCAST_INTRO: 'Merhaba Dijital Mentor ailesi'
+          PODCAST_OUTRO: 'Gelecek bizim, hoşçakalın'
+        run: |
+          node generate.js \
+            "${{ inputs.episode_id }}" \
+            "${{ inputs.topic_prompt }}" \
+            "${{ inputs.title }}" \
+            "${{ inputs.description }}"
+
+      - name: Upload artifacts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: podcast-generation-logs
+          path: |
+            automation/podcast/temp/
+            automation/podcast/output/
+          retention-days: 7
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Podcast episode #${{ inputs.episode_id }} successfully generated!"
+          echo "🔗 Check: https://dijitalmentor.de/panel/admin (Podcast tab)"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Podcast generation failed for episode #${{ inputs.episode_id }}"
+          echo "📋 Check workflow logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
