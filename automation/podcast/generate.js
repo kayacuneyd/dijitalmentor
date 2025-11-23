@@ -84,17 +84,25 @@ async function generatePodcast(episodeId, topicPrompt, title = '', description =
     }
 
     // Step 7: Upload to YouTube
-    logProgress(episodeId, 'generating', '📺 YouTube\'a yükleniyor...');
-    let youtubeVideoId = null;
+  logProgress(episodeId, 'generating', '📺 YouTube\'a yükleniyor...');
+  let youtubeVideoId = null;
 
-    try {
-      const youtube = new YouTubeClient();
-      youtubeVideoId = await youtube.uploadPodcast({
-        title: title || topicPrompt,
-        description: description || script.substring(0, 500) + '...',
-        audioPath: finalAudioPath,
-        thumbnailPath: thumbnailPath
-      });
+  try {
+    const youtube = new YouTubeClient();
+    const videoTitle = (title || topicPrompt || `Episode ${episodeId}`).trim();
+    const videoDescription = (description || script.substring(0, 500) + '...').trim();
+
+    // YouTube title cannot be empty
+    if (!videoTitle) {
+      throw new Error('YouTube title is empty; please provide a topic/title');
+    }
+
+    youtubeVideoId = await youtube.uploadPodcast({
+      title: videoTitle,
+      description: videoDescription,
+      audioPath: finalAudioPath,
+      thumbnailPath: thumbnailPath
+    });
 
       logProgress(episodeId, 'generating', `✅ YouTube video ID: ${youtubeVideoId}`);
     } catch (ytError) {
