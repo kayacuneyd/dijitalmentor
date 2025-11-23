@@ -65,6 +65,8 @@ $envHost = getenv('DB_HOST') ?: getenv('MYSQL_HOST');
 $envName = getenv('DB_NAME') ?: getenv('MYSQL_DATABASE');
 $envUser = getenv('DB_USER') ?: getenv('MYSQL_USER');
 $envPass = getenv('DB_PASS');
+$envPort = getenv('DB_PORT') ?: getenv('MYSQL_PORT') ?: '3306';
+$envSocket = getenv('DB_SOCKET') ?: getenv('MYSQL_SOCKET') ?: '';
 
 // Heroku/ClearDB style single URL fallback: mysql://user:pass@host/dbname
 $databaseUrl = getenv('DATABASE_URL') ?: getenv('CLEARDB_DATABASE_URL') ?: getenv('JAWSDB_URL');
@@ -91,10 +93,16 @@ $host = $envHost;
 $dbname = $envName;
 $username = $envUser;
 $password = $envPass ?: '';
+$port = $envPort ?: '3306';
+$socket = $envSocket;
 
 try {
+    $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4;port={$port}";
+    if ($socket) {
+        $dsn .= ";unix_socket={$socket}";
+    }
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+        $dsn,
         $username,
         $password,
         [
@@ -104,5 +112,6 @@ try {
     );
 } catch (PDOException $e) {
     http_response_code(500);
+    error_log('[dijitalmentor] Database connection failed: ' . $e->getMessage() . " (host={$host}, port={$port}, socket={$socket})");
     die(json_encode(['error' => 'Database connection failed']));
 }
