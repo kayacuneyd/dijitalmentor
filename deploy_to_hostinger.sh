@@ -23,7 +23,19 @@ echo "🚀 Dosyalar Hostinger'a yükleniyor..."
 # rsync -avz -e "ssh -p 65002" ./server/api/ \
 # u553245641@185.224.137.82:/home/u553245641/domains/dijitalmentor.de/public_html/api_root/server/api/
 
-rsync -avz --update --progress --delete -e "ssh -p 65002" ./server/ u553245641@185.224.137.82:/home/u553245641/domains/dijitalmentor.de/public_html/api_root/server/
+# İzinleri tutarlı kılmak için yeni dosyalara 644, klasörlere 755 uygula
+# umask 022 + rsync --chmod ile hedefte doğru izinler oluşur
+rsync -avz --update --progress --delete \
+  --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
+  -e "ssh -p 65002" \
+  ./server/ u553245641@185.224.137.82:/home/u553245641/domains/dijitalmentor.de/public_html/api_root/server/
+
+# Hedefte son bir kez izinleri normalize et (gerekirse)
+ssh -p 65002 u553245641@185.224.137.82 "
+  umask 022
+  find /home/u553245641/domains/dijitalmentor.de/public_html/api_root/server -type d -exec chmod 755 {} \;
+  find /home/u553245641/domains/dijitalmentor.de/public_html/api_root/server -type f -exec chmod 644 {} \;
+"
 
 # 3️⃣ Sonuç bildirimi
 if [ $? -eq 0 ]; then
