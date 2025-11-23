@@ -57,6 +57,9 @@ echo "DB_NAME: " . ($name ?: 'NOT SET') . "\n";
 echo "DB_USER: " . ($user ?: 'NOT SET') . "\n";
 echo "DB_PASS: " . ($pass ? 'SET (length: ' . strlen($pass) . ')' : 'NOT SET') . "\n";
 
+$jwtSecret = getenv('JWT_SECRET');
+echo "JWT_SECRET: " . ($jwtSecret ? 'SET (length: ' . strlen($jwtSecret) . ')' : 'NOT SET (Using fallback)') . "\n";
+
 if (!$host || !$name || !$user) {
     die("\nERROR: Missing required configuration variables.\n");
 }
