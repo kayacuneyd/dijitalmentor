@@ -12,13 +12,17 @@
     if (!newComment.trim()) return;
     
     submitting = true;
-    const res = await api.post('/blog/comment.php', { postId, text: newComment });
+    const res = await api.post('/blog/comment.php', {
+      postId,
+      text: newComment,
+      user: $auth.user?.full_name || 'Anonim'
+    });
     
     if (res.success) {
       // Optimistically add comment
       comments = [...comments, {
         id: Date.now(),
-        user: $auth.user.name,
+        user: $auth.user?.full_name || 'Anonim',
         text: newComment,
         date: new Date().toISOString().split('T')[0]
       }];
