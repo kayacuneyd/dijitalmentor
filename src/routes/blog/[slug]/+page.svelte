@@ -4,6 +4,7 @@
   import { api } from '$lib/utils/api';
   import ShareButtons from '$lib/components/ShareButtons.svelte';
   import CommentSection from '$lib/components/CommentSection.svelte';
+  import { marked } from 'marked';
 
   let post = null;
   let loading = true;
@@ -21,6 +22,9 @@
     const res = await api.get(`/blog/detail.php?slug=${slug}`);
     if (res.success) {
       post = res.data;
+      if (post?.content_markdown) {
+        post.content = marked.parse(post.content_markdown);
+      }
     } else {
       error = res.message;
     }
@@ -32,10 +36,46 @@
   {#if post}
     <title>{post.title} - DijitalMentor Blog</title>
     <meta name="description" content={post.excerpt} />
+    <link rel="canonical" href={$page.url.href} />
+    
+    <!-- Open Graph -->
     <meta property="og:title" content={post.title} />
     <meta property="og:description" content={post.excerpt} />
     <meta property="og:image" content={post.image} />
+    <meta property="og:url" content={$page.url.href} />
     <meta property="og:type" content="article" />
+    <meta property="article:published_time" content={post.date} />
+    <meta property="article:author" content={post.author} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={post.title} />
+    <meta name="twitter:description" content={post.excerpt} />
+    <meta name="twitter:image" content={post.image} />
+
+    <!-- JSON-LD Structured Data -->
+    {@html `<script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "${post.title}",
+        "image": "${post.image}",
+        "author": {
+          "@type": "Person",
+          "name": "${post.author}"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "DijitalMentor",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://dijitalmentor.de/logo.png"
+          }
+        },
+        "datePublished": "${post.date}",
+        "description": "${post.excerpt}"
+      }
+    </script>`}
   {:else}
     <title>Blog - DijitalMentor</title>
   {/if}

@@ -34,6 +34,21 @@
     image: '',
     is_published: 1
   };
+  let announcements = [];
+  let annLoading = false;
+  let announcementForm = {
+    id: null,
+    slug: '',
+    title: '',
+    body: '',
+    award_month: '',
+    award_name: '',
+    is_published: 0,
+    winners: []
+  };
+
+  let pendingReviews = [];
+  let reviewsLoading = false;
 
   let rewardOverview = {
     parent_hours: 0,
@@ -70,6 +85,8 @@
       loadRecentMessages(),
       loadSupportMessages(),
       loadBlogPosts(),
+      loadAnnouncements(),
+      loadPendingReviews(),
       loadRewards()
     ]);
     initialized = true;
@@ -246,6 +263,105 @@ let activeSupportFilter = '';
     }
   }
 
+  // Announcements
+  async function loadAnnouncements() {
+    annLoading = true;
+    try {
+      const res = await api.get('/admin/announcements/list.php');
+      announcements = res.data || [];
+    } catch (err) {
+      toast.error(err.message || 'Duyurular getirilemedi');
+    } finally {
+      annLoading = false;
+    }
+  }
+
+  function editAnnouncement(item) {
+    announcementForm = {
+      id: item.id,
+      slug: item.slug,
+      title: item.title,
+      body: item.body || '',
+      award_month: item.award_month || '',
+      award_name: item.award_name || '',
+      is_published: item.is_published ? 1 : 0,
+      winners: item.winners || []
+    };
+    activeTab = 'announcements';
+  }
+
+  function resetAnnouncement() {
+    announcementForm = {
+      id: null,
+      slug: '',
+      title: '',
+      body: '',
+      award_month: '',
+      award_name: '',
+      is_published: 0,
+      winners: []
+    };
+  }
+
+  function addWinner() {
+    announcementForm = {
+      ...announcementForm,
+      winners: [...announcementForm.winners, { user_id: '', rank: (announcementForm.winners?.length || 0) + 1, rationale: '' }]
+    };
+  }
+
+  function removeWinner(idx) {
+    announcementForm = {
+      ...announcementForm,
+      winners: announcementForm.winners.filter((_, i) => i !== idx)
+    };
+  }
+
+  async function saveAnnouncement() {
+    try {
+      await api.post('/admin/announcements/save.php', announcementForm);
+      toast.success('Duyuru kaydedildi');
+      resetAnnouncement();
+      loadAnnouncements();
+    } catch (err) {
+      toast.error(err.message || 'Duyuru kaydedilemedi');
+    }
+  }
+
+  async function deleteAnnouncement(id) {
+    if (!confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) return;
+    try {
+      await api.post('/admin/announcements/delete.php', { id });
+      toast.success('Duyuru silindi');
+      loadAnnouncements();
+    } catch (err) {
+      toast.error(err.message || 'Duyuru silinemedi');
+    }
+  }
+
+  // Reviews moderation
+  async function loadPendingReviews() {
+    reviewsLoading = true;
+    try {
+      const res = await api.get('/admin/reviews/list.php', { status: 'pending', limit: 200 });
+      pendingReviews = res.data || [];
+    } catch (err) {
+      toast.error(err.message || 'Yorumlar getirilemedi');
+    } finally {
+      reviewsLoading = false;
+    }
+  }
+
+  async function moderateReview(id, status) {
+    try {
+      await api.post('/admin/reviews/moderate.php', { id, status });
+      toast.success('Güncellendi');
+      loadPendingReviews();
+    } catch (err) {
+      toast.error(err.message || 'Güncellenemedi');
+    }
+  }
+
   async function deleteBlogPost(id) {
     if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
     try {
@@ -312,6 +428,8 @@ let activeSupportFilter = '';
         { id: 'teachers', label: 'Öğretmen Onayları' },
         { id: 'messages', label: 'Mesaj Denetimi' },
         { id: 'support', label: 'Destek Kutusu' },
+        { id: 'reviews', label: 'Yorum Moderasyon' },
+        { id: 'announcements', label: 'Duyurular & Ayın Ödülü' },
         { id: 'blog', label: 'Blog Yönetimi' },
         { id: 'rewards', label: 'Ödül & Saat Takibi' }
       ] as tab}
@@ -563,6 +681,114 @@ let activeSupportFilter = '';
             {/each}
           </div>
         {/if}
+      </section>
+    {:else if activeTab === 'reviews'}
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-semibold text-gray-900">Yorum Moderasyon</h2>
+          <button class="text-sm text-blue-600 hover:underline" on:click={loadPendingReviews}>Yenile</button>
+        </div>
+        {#if reviewsLoading}
+          <div class="flex justify-center py-10">
+            <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        {:else}
+          <div class="grid gap-3">
+            {#each pendingReviews as rev}
+              <div class="bg-white border border-gray-100 rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between items-center">
+                  <div class="font-semibold text-gray-900">{rev.teacher_name}</div>
+                  <div class="text-sm text-gray-500">{rev.reviewer_name || 'Anonim'} • {rev.rating}/5</div>
+                </div>
+                <div class="text-sm text-gray-700 whitespace-pre-line">{rev.comment}</div>
+                <div class="text-xs text-gray-500">{new Date(rev.created_at).toLocaleString('tr-TR')}</div>
+                <div class="flex gap-2">
+                  <button class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800" on:click={() => moderateReview(rev.id, 'approved')}>Onayla</button>
+                  <button class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800" on:click={() => moderateReview(rev.id, 'rejected')}>Reddet</button>
+                </div>
+              </div>
+            {:else}
+              <div class="bg-white border border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-500">
+                Bekleyen yorum yok.
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </section>
+    {:else if activeTab === 'announcements'}
+      <section class="grid lg:grid-cols-2 gap-6">
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-900">Duyurular</h2>
+            <button class="text-sm text-blue-600 hover:underline" on:click={loadAnnouncements}>Yenile</button>
+          </div>
+          {#if annLoading}
+            <div class="flex justify-center py-10">
+              <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          {:else}
+            <ul class="divide-y divide-gray-100 max-h-[520px] overflow-y-auto">
+              {#each announcements as ann}
+                <li class="py-3 flex flex-col gap-1">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="font-semibold text-gray-900">{ann.title}</div>
+                      <div class="text-xs text-gray-500">{ann.slug}</div>
+                    </div>
+                    <div class="flex gap-2">
+                      <button class="text-sm text-blue-600 hover:underline" on:click={() => editAnnouncement(ann)}>Düzenle</button>
+                      <button class="text-sm text-red-600 hover:underline" on:click={() => deleteAnnouncement(ann.id)}>Sil</button>
+                    </div>
+                  </div>
+                  <div class="text-xs text-gray-500 flex items-center gap-2">
+                    <span>{ann.is_published ? 'Yayında' : 'Taslak'}</span>
+                    {#if ann.award_name}<span>• {ann.award_name}</span>{/if}
+                  </div>
+                </li>
+              {:else}
+                <li class="py-6 text-center text-gray-500">Henüz duyuru yok.</li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 space-y-3">
+          <h2 class="text-xl font-semibold text-gray-900">{announcementForm.id ? 'Duyuru Düzenle' : 'Yeni Duyuru'}</h2>
+          <div class="grid gap-3">
+            <input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500" placeholder="Slug" bind:value={announcementForm.slug} />
+            <input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500" placeholder="Başlık" bind:value={announcementForm.title} />
+            <input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500" placeholder="Ödül adı (opsiyonel)" bind:value={announcementForm.award_name} />
+            <input type="month" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500" bind:value={announcementForm.award_month} />
+            <MarkdownEditor bind:value={announcementForm.body} label="Duyuru İçeriği" />
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" bind:checked={announcementForm.is_published} />
+                Yayında
+              </label>
+              <button class="text-sm text-blue-600 hover:underline" on:click={addWinner}>Ödül kazananı ekle</button>
+            </div>
+            {#if announcementForm.winners?.length}
+              <div class="space-y-2">
+                {#each announcementForm.winners as win, i}
+                  <div class="border border-gray-200 rounded-lg p-3 grid gap-2">
+                    <div class="flex gap-2">
+                      <input class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Kullanıcı ID" bind:value={win.user_id} on:input={(e) => announcementForm.winners[i].user_id = e.target.value} />
+                      <input class="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Sıra" bind:value={win.rank} on:input={(e) => announcementForm.winners[i].rank = e.target.value} />
+                      <button class="text-xs text-red-600" on:click={() => removeWinner(i)}>Sil</button>
+                    </div>
+                    <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Gerekçe" bind:value={win.rationale}></textarea>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+          <div class="flex gap-3">
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition" on:click={saveAnnouncement}>Kaydet</button>
+            {#if announcementForm.id}
+              <button class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition" on:click={resetAnnouncement}>Yeni</button>
+            {/if}
+          </div>
+        </div>
       </section>
     {:else if activeTab === 'blog'}
       <section class="grid lg:grid-cols-2 gap-6">

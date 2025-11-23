@@ -69,11 +69,20 @@
       </button>
     </div>
   {:else}
-    <div class="bg-blue-50 rounded-xl p-6 text-center">
-      <p class="text-gray-700 mb-4">Yorum yapabilmek için giriş yapmalısınız.</p>
-      <a href="/giris" class="inline-block bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-        Giriş Yap
-      </a>
+    <div class="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+      <div class="mb-4 text-4xl">🔒</div>
+      <h4 class="text-xl font-bold text-gray-900 mb-2">Yorum Yapmak İçin Giriş Yapın</h4>
+      <p class="text-gray-600 mb-6">
+        Düşüncelerinizi paylaşmak ve tartışmaya katılmak için lütfen hesabınıza giriş yapın.
+      </p>
+      <div class="flex gap-4 justify-center">
+        <a href="/giris" class="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 transition shadow-lg hover:shadow-xl">
+          Giriş Yap
+        </a>
+        <a href="/kayit" class="bg-white text-blue-600 border-2 border-blue-600 font-bold px-8 py-3 rounded-xl hover:bg-blue-50 transition">
+          Kayıt Ol
+        </a>
+      </div>
     </div>
   {/if}
 </div>

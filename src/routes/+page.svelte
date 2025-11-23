@@ -8,6 +8,25 @@
     name="description"
     content="Avrupa'daki Türk diasporasını, çocuklarına hem ders hem de mentorluk verebilen üniversiteli rol modellerle buluşturan platform."
   />
+  <!-- JSON-LD Structured Data -->
+  {@html `<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DijitalMentor",
+      "url": "https://dijitalmentor.de",
+      "logo": "https://dijitalmentor.de/logo.png",
+      "sameAs": [
+        "https://www.facebook.com/dijitalmentor",
+        "https://www.instagram.com/dijitalmentor"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+49-123-456-7890",
+        "contactType": "customer service"
+      }
+    }
+  </script>`}
 </svelte:head>
 
 <!-- Hero Section -->
