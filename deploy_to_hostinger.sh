@@ -23,7 +23,7 @@ echo "🚀 Dosyalar Hostinger'a yükleniyor..."
 # rsync -avz -e "ssh -p 65002" ./server/api/ \
 # u553245641@185.224.137.82:/home/u553245641/domains/dijitalmentor.de/public_html/api_root/server/api/
 
-rsync -avz --update --progress --delete -e "ssh -p 65002" ./server/api/ u553245641@185.224.137.82:/home/u553245641/domains/dijitalmentor.de/public_html/api_root/server/api/
+rsync -avz --update --progress --delete -e "ssh -p 65002" ./server/ u553245641@185.224.137.82:/home/u553245641/domains/dijitalmentor.de/public_html/api_root/server/
 
 # 3️⃣ Sonuç bildirimi
 if [ $? -eq 0 ]; then
