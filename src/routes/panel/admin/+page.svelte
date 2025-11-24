@@ -250,6 +250,21 @@
     }
   }
 
+  async function deleteTeacher(userId) {
+    if (!confirm('Bu öğretmeni tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+      return;
+    }
+    try {
+      await api.post('/admin/teachers/delete.php', {
+        user_id: userId
+      });
+      toast.success('Öğretmen silindi');
+      loadTeachers();
+    } catch (err) {
+      toast.error(err.message || 'Silme işlemi başarısız');
+    }
+  }
+
   async function toggleUserActive(userId, isActive) {
     try {
       await api.post('/admin/users/toggle_active.php', {
@@ -638,6 +653,12 @@ let activeSupportFilter = '';
                           on:click={() => toggleUserActive(teacher.id, teacher.is_active ? 0 : 1)}
                         >
                           {teacher.is_active ? 'Hesabı Kapat' : 'Hesabı Aç'}
+                        </button>
+                        <button
+                          class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700 hover:bg-red-200"
+                          on:click={() => deleteTeacher(teacher.id)}
+                        >
+                          Sil
                         </button>
                       </div>
                     </td>
