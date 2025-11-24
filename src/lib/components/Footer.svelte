@@ -88,6 +88,8 @@
       <div class="flex justify-center gap-4 mt-6 pt-4 border-t border-gray-800">
         <a href="https://instagram.com/dijitalmentor" target="_blank" rel="noreferrer" class="hover:text-white transition">Instagram</a>
         <a href="https://facebook.com/dijitalmentor" target="_blank" rel="noreferrer" class="hover:text-white transition">Facebook</a>
+        <a href="https://youtube.com/@dijitalmentor" target="_blank" rel="noreferrer" class="hover:text-white transition">YouTube</a>
+        <a href="https://open.spotify.com/show/dijitalmentor" target="_blank" rel="noreferrer" class="hover:text-white transition">Spotify</a>
         <a href="https://wa.me/49123456789" target="_blank" rel="noreferrer" class="hover:text-white transition">WhatsApp</a>
       </div>
     </div>

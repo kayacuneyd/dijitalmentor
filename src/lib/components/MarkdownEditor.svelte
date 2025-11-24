@@ -61,7 +61,7 @@
     <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 min-h-[240px] overflow-auto">
       <div class="text-xs uppercase tracking-wide text-gray-500 mb-2 font-semibold">Önizleme</div>
       {#if previewHtml}
-        <div class="prose prose-sm md:prose">
+        <div class="prose prose-sm md:prose max-w-none prose-blue">
           {@html previewHtml}
         </div>
       {:else}
@@ -72,23 +72,73 @@
 </div>
 
 <style>
-  .prose :global(p) {
-    margin-top: 0.75rem;
-    margin-bottom: 0.75rem;
+  /* Match Tailwind prose styles used in frontend */
+  :global(.prose) {
+    color: #374151;
+    max-width: none;
   }
-
-  .prose :global(h1),
-  .prose :global(h2),
-  .prose :global(h3) {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
+  :global(.prose h1) {
+    color: #111827;
+    font-weight: 800;
+    font-size: 2.25em;
+    margin-top: 0;
+    margin-bottom: 0.8888889em;
+    line-height: 1.1111111;
   }
-  .prose :global(ul) {
-    margin-left: 1.25rem;
-    list-style: disc;
+  :global(.prose h2) {
+    color: #111827;
+    font-weight: 700;
+    font-size: 1.5em;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    line-height: 1.3333333;
   }
-  .prose :global(ol) {
-    margin-left: 1.25rem;
-    list-style: decimal;
+  :global(.prose h3) {
+    color: #111827;
+    font-weight: 600;
+    font-size: 1.25em;
+    margin-top: 1.6em;
+    margin-bottom: 0.6em;
+    line-height: 1.6;
+  }
+  :global(.prose p) {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    line-height: 1.75;
+  }
+  :global(.prose a) {
+    color: #2563eb;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  :global(.prose ul) {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    list-style-type: disc;
+    padding-left: 1.625em;
+  }
+  :global(.prose ol) {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    list-style-type: decimal;
+    padding-left: 1.625em;
+  }
+  :global(.prose li) {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  :global(.prose strong) {
+    color: #111827;
+    font-weight: 600;
+  }
+  :global(.prose blockquote) {
+    font-weight: 500;
+    font-style: italic;
+    color: #111827;
+    border-left-width: 0.25rem;
+    border-left-color: #e5e7eb;
+    margin-top: 1.6em;
+    margin-bottom: 1.6em;
+    padding-left: 1em;
   }
 </style>

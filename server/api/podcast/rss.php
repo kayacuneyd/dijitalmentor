@@ -42,6 +42,9 @@ try {
     // Build RSS feed
     $xml = new DOMDocument('1.0', 'UTF-8');
     $xml->formatOutput = true;
+    
+    // Clean output buffer to remove any whitespace or output before XML
+    if (ob_get_length()) ob_clean();
 
     // RSS root
     $rss = $xml->createElement('rss');
