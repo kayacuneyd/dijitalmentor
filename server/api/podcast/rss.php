@@ -129,9 +129,25 @@ try {
         $item->appendChild($xml->createElement('pubDate', date(DATE_RFC2822, $pubDate)));
 
         // Enclosure (audio file)
+        // Check if audio_url is already a full URL or a relative path from R2
         $audioUrl = $episode['audio_url'];
+        
+        // If it looks like a filename (e.g., episode-15.mp3), construct the full R2 URL
+        // Format: https://pub-4ac916dc08f2477e8b9d4c985ce3703b.r2.dev/episodes/episode-{ID}.mp3
         if (!str_starts_with($audioUrl, 'http')) {
-            $audioUrl = getenv('CLOUDFLARE_R2_PUBLIC_URL') . '/' . $audioUrl;
+             // Use explicit R2 bucket URL if known, otherwise fallback to env
+             $r2Url = getenv('CLOUDFLARE_R2_PUBLIC_URL');
+             if (!$r2Url) {
+                 // Fallback hardcoded URL based on user report
+                 $r2Url = 'https://pub-4ac916dc08f2477e8b9d4c985ce3703b.r2.dev';
+             }
+             
+             // Ensure audioUrl has the right path structure if it's just a filename
+             if (!str_contains($audioUrl, '/')) {
+                 $audioUrl = $r2Url . '/episodes/' . $audioUrl;
+             } else {
+                 $audioUrl = $r2Url . '/' . $audioUrl;
+             }
         }
 
         $enclosure = $xml->createElement('enclosure');
