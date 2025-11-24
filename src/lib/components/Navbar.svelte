@@ -3,9 +3,16 @@
   import Button from '$lib/components/Button.svelte';
   
   let mobileMenuOpen = false;
-  
+  let aboutDropdownOpen = false;
+  let mobileAboutOpen = false;
+
   function closeMobileMenu() {
     mobileMenuOpen = false;
+    mobileAboutOpen = false;
+  }
+  
+  function toggleMobileAbout() {
+    mobileAboutOpen = !mobileAboutOpen;
   }
   
   $: user = $authStore.user;
@@ -30,10 +37,38 @@
           <a href="/ara" class="text-gray-700 hover:text-primary-600 font-medium transition">Öğretmen Bul</a>
           <a href="/ders-talepleri" class="text-gray-700 hover:text-primary-600 font-medium transition">Ders Talepleri</a>
         {/if}
-        <a href="/nasil-calisir" class="text-gray-700 hover:text-primary-600 font-medium transition">Nasıl Çalışır?</a>
-        <a href="/danisma-kurulu" class="text-gray-700 hover:text-primary-600 font-medium transition">Danışma Kurulu</a>
-        <a href="/podcast" class="text-gray-700 hover:text-primary-600 font-medium transition">Podcast</a>
-        <a href="/blog" class="text-gray-700 hover:text-primary-600 font-medium transition">Blog</a>
+
+        <!-- Dropdown Menu -->
+        <div class="relative group"
+             on:mouseenter={() => aboutDropdownOpen = true}
+             on:mouseleave={() => aboutDropdownOpen = false}>
+          <button class="flex items-center gap-1 text-gray-700 hover:text-primary-600 font-medium transition py-2">
+            Hakkımızda
+            <svg class="w-4 h-4 transform transition-transform duration-200" class:rotate-180={aboutDropdownOpen} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <div class="absolute top-full left-0 w-48 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden transition-all duration-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0">
+             <a href="/hakkimizda" class="block px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-primary-600 transition border-b border-gray-50">
+               Kurumsal
+             </a>
+             <a href="/podcast" class="block px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-primary-600 transition border-b border-gray-50">
+               Podcast
+             </a>
+             <a href="/blog" class="block px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-primary-600 transition border-b border-gray-50">
+               Blog
+             </a>
+             <a href="/nasil-calisir" class="block px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-primary-600 transition border-b border-gray-50">
+               Nasıl Çalışır?
+             </a>
+             <a href="/danisma-kurulu" class="block px-4 py-3 hover:bg-gray-50 text-gray-700 hover:text-primary-600 transition">
+               Danışma Kurulu
+             </a>
+          </div>
+        </div>
+
+        <a href="/iletisim" class="text-gray-700 hover:text-primary-600 font-medium transition">İletişim</a>
         
         {#if isAuthenticated}
           <a href="/panel" class="text-gray-700 hover:text-primary-600 transition">
@@ -78,10 +113,32 @@
           <a href="/ara" class="py-2" on:click={closeMobileMenu}>Öğretmen Bul</a>
           <a href="/ders-talepleri" class="py-2" on:click={closeMobileMenu}>Ders Talepleri</a>
         {/if}
-        <a href="/nasil-calisir" class="py-2" on:click={closeMobileMenu}>Nasıl Çalışır?</a>
-        <a href="/danisma-kurulu" class="py-2" on:click={closeMobileMenu}>Danışma Kurulu</a>
-        <a href="/podcast" class="py-2" on:click={closeMobileMenu}>Podcast</a>
-        <a href="/blog" class="py-2" on:click={closeMobileMenu}>Blog</a>
+        
+        <!-- Mobile Dropdown -->
+        <div class="py-2">
+          <button 
+            on:click={toggleMobileAbout}
+            class="flex items-center justify-between w-full text-left"
+          >
+            <span class="font-medium text-gray-900">Hakkımızda</span>
+            <svg class="w-4 h-4 transform transition-transform duration-200 {mobileAboutOpen ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {#if mobileAboutOpen}
+            <div class="pl-4 mt-2 space-y-2 border-l-2 border-gray-100 ml-1">
+              <a href="/hakkimizda" class="block py-1 text-gray-600" on:click={closeMobileMenu}>Kurumsal</a>
+              <a href="/podcast" class="block py-1 text-gray-600" on:click={closeMobileMenu}>Podcast</a>
+              <a href="/blog" class="block py-1 text-gray-600" on:click={closeMobileMenu}>Blog</a>
+              <a href="/nasil-calisir" class="block py-1 text-gray-600" on:click={closeMobileMenu}>Nasıl Çalışır?</a>
+              <a href="/danisma-kurulu" class="block py-1 text-gray-600" on:click={closeMobileMenu}>Danışma Kurulu</a>
+            </div>
+          {/if}
+        </div>
+
+        <a href="/iletisim" class="py-2" on:click={closeMobileMenu}>İletişim</a>
+        
         {#if isAuthenticated}
           <a href="/panel" class="py-2" on:click={closeMobileMenu}>Panelim</a>
           <button on:click={() => { authStore.logout(); closeMobileMenu(); }} class="text-left py-2 text-red-600">
