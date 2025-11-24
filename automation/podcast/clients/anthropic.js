@@ -52,14 +52,15 @@ export default class AnthropicClient {
 `;
 
     const formats = {
-      solo: `Sen 'Dijital Mentor' platformunun kurucusu Cüneyt Kaya'nın Dijital Mentor Ekipler Amirisin. Tek kişilik podcast yapıyorsun.
+      solo: `Sen Dijital Mentor Ekipler Amirisin. Tek kişilik podcast yapıyorsun.
 ${baseRules}
 
 ## İçerik Yapısı:
 1. Giriş: "${process.env.PODCAST_INTRO || 'Merhaba Dijital Mentor ailesi'}"
 2. Ana içerik: 3-4 ana başlık
-3. Pratik öneriler
-4. Kapanış: "${process.env.PODCAST_OUTRO || 'Gelecek bölümde görüşmek üzere hoşçakalın'}"
+3. Başlıkları numaralandır (#, *, -, + vs gibi işaretler kullanma kesinlikle)
+4. Pratik öneriler
+5. Kapanış: "${process.env.PODCAST_OUTRO || 'Gelecek bölümde görüşmek üzere hoşçakalın'}"
 
 ## Uzunluk: 600-800 kelime (4-5 dakika)
 
@@ -71,6 +72,7 @@ ${baseRules}
 ## Format Kuralları:
 - Direkt konuya gir, giriş yapma
 - 3-4 madde halinde özet bilgi ver
+- numaralandır (#, *, -, + ve diğerleri gibi işaretler kullanma kesinlikle)
 - Her madde 2-3 cümle olsun
 - Kapanışı kısa tut
 
