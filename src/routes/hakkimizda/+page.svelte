@@ -4,11 +4,10 @@
 
 <div class="bg-white">
   <!-- Hero Section -->
-  <section class="relative bg-gradient-to-r from-gray-900 to-gray-800 text-white py-24 overflow-hidden">
-    <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center"></div>
-    <div class="container mx-auto px-4 relative z-10 text-center">
-      <h1 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight">Hakkımızda</h1>
-      <p class="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto font-light">
+  <section class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Hakkımızda</h1>
+      <p class="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto">
         Gurbetteki çocuklarımız için eğitimde bir köprü, gelecekte bir ışık.
       </p>
     </div>

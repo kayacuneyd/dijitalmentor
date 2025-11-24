@@ -19,14 +19,18 @@
   <meta name="description" content="Eğitim, çocuk gelişimi, mentorluk ve gurbette yaşam hakkında faydalı yazılar." />
 </svelte:head>
 
-<div class="container mx-auto px-4 py-12 max-w-6xl">
-  <div class="text-center mb-16">
-    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Blog</h1>
-    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-      Eğitim, çocuk gelişimi ve gurbette yaşam hakkında faydalı bilgiler.
-    </p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Blog</h1>
+      <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
+        Eğitim, çocuk gelişimi, mentorluk ve gurbette yaşam hakkında faydalı yazılar.
+      </p>
+    </div>
   </div>
 
+  <div class="container mx-auto px-4 py-12 max-w-6xl">
+  
   {#if loading}
     <div class="flex justify-center py-12">
       <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -64,4 +68,5 @@
       {/each}
     </div>
   {/if}
+  </div>
 </div>

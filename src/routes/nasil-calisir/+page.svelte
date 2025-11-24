@@ -6,17 +6,17 @@
   <title>Nasıl Çalışır? - DijitalMentor</title>
 </svelte:head>
 
-<div class="container mx-auto px-4 py-12 space-y-12">
-  <div class="text-center">
-    <p class="text-sm uppercase tracking-[0.4em] text-primary-600 mb-2">Nasıl Çalışır</p>
-    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-      Eğitim yolculuğunuza net adımlar
-    </h1>
-    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-      Veliler, mentorlar ve partner dernekler için süreci sadeleştirdik. Herkes
-      DijitalMentor’da ne yapması gerektiğini adım adım bilir.
-    </p>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Nasıl Çalışır?</h1>
+      <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
+        Veliler, mentorlar ve partner dernekler için süreci sadeleştirdik. Herkes DijitalMentor’da ne yapması gerektiğini adım adım bilir.
+      </p>
+    </div>
   </div>
+
+  <div class="container mx-auto px-4 py-12 space-y-12">
 
   <section class="grid lg:grid-cols-2 gap-8">
     <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
@@ -58,5 +58,6 @@
     <Button variant="primary" size="lg" href="/iletisim">
       Destek ya da iş birliği talebi gönderin
     </Button>
+  </div>
   </div>
 </div>

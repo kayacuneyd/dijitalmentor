@@ -2,16 +2,17 @@
   <title>DijitalMentor Danışma Kurulu</title>
 </svelte:head>
 
-<section class="bg-white">
-  <div class="container mx-auto px-4 py-12 space-y-10 max-w-4xl">
-    <div class="text-center space-y-3">
-      <p class="text-sm uppercase tracking-[0.35em] text-primary-600">Güven ve Şeffaflık</p>
-      <h1 class="text-4xl font-bold text-gray-900">Danışma Kurulu</h1>
-      <p class="text-lg text-gray-600">
+<section class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Danışma Kurulu</h1>
+      <p class="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
         Mentor onay süreçleri akademik, etik ve topluluk kriterleri ışığında bağımsız bir kurul tarafından yürütülür.
-        Her mentorun kimlik ve belge doğrulaması tamamlanır, topluluk ilkelerine uyum kontrol edilir.
       </p>
     </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-12 space-y-10 max-w-4xl">
 
     <div class="grid md:grid-cols-2 gap-6">
       <div class="bg-gray-50 border border-gray-100 rounded-2xl p-6 shadow-sm">
