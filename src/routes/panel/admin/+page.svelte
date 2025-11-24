@@ -65,6 +65,14 @@
     notes: ''
   };
 
+  // Teacher edit modal
+  let selectedTeacher = null;
+  let teacherEditForm = null;
+  let teacherEditLoading = false;
+  let teacherEditSaving = false;
+  let showTeacherEditModal = false;
+  let allSubjects = [];
+
   let initialized = false;
 
   $: authState = $authStore;
@@ -88,7 +96,8 @@
       loadBlogPosts(),
       loadAnnouncements(),
       loadPendingReviews(),
-      loadRewards()
+      loadRewards(),
+      loadSubjects()
     ]);
     initialized = true;
   });
@@ -139,6 +148,105 @@
       toast.error(err.message || 'Konuşma getirilemedi');
     } finally {
       conversationLoading = false;
+    }
+  }
+
+  async function loadSubjects() {
+    try {
+      const res = await api.get('/subjects/list.php');
+      allSubjects = res.data || [];
+    } catch (err) {
+      console.error('Dersler yüklenemedi:', err);
+    }
+  }
+
+  async function openTeacherEdit(teacherId) {
+    teacherEditLoading = true;
+    showTeacherEditModal = true;
+    try {
+      const res = await api.get('/admin/teachers/detail.php', { id: teacherId });
+      selectedTeacher = res.data;
+      
+      // Form verisini hazırla
+      teacherEditForm = {
+        user_id: selectedTeacher.id,
+        full_name: selectedTeacher.full_name || '',
+        email: selectedTeacher.email || '',
+        phone: selectedTeacher.phone || '',
+        approval_status: selectedTeacher.approval_status || 'pending',
+        is_active: selectedTeacher.is_active ? true : false,
+        is_verified: selectedTeacher.is_verified ? true : false,
+        university: selectedTeacher.university || '',
+        department: selectedTeacher.department || '',
+        graduation_year: selectedTeacher.graduation_year || '',
+        bio: selectedTeacher.bio || '',
+        city: selectedTeacher.city || '',
+        zip_code: selectedTeacher.zip_code || '',
+        hourly_rate: selectedTeacher.hourly_rate || 20,
+        experience_years: selectedTeacher.experience_years || 0,
+        rating_avg: selectedTeacher.rating_avg || 0,
+        review_count: selectedTeacher.review_count || 0,
+        subjects: (selectedTeacher.subjects || []).map(s => ({
+          id: s.id,
+          proficiency_level: s.proficiency_level || 'intermediate'
+        }))
+      };
+    } catch (err) {
+      toast.error(err.message || 'Öğretmen bilgileri yüklenemedi');
+      showTeacherEditModal = false;
+    } finally {
+      teacherEditLoading = false;
+    }
+  }
+
+  function closeTeacherEdit() {
+    showTeacherEditModal = false;
+    selectedTeacher = null;
+    teacherEditForm = null;
+  }
+
+  function toggleSubject(subjectId) {
+    if (!teacherEditForm) return;
+    const existingIndex = teacherEditForm.subjects.findIndex(s => s.id === subjectId);
+    if (existingIndex >= 0) {
+      teacherEditForm.subjects.splice(existingIndex, 1);
+    } else {
+      teacherEditForm.subjects.push({
+        id: subjectId,
+        proficiency_level: 'intermediate'
+      });
+    }
+    teacherEditForm = { ...teacherEditForm }; // Trigger reactivity
+  }
+
+  function updateSubjectLevel(subjectId, event) {
+    if (!teacherEditForm) return;
+    const level = event.currentTarget?.value || 'intermediate';
+    const subject = teacherEditForm.subjects.find(s => s.id === subjectId);
+    if (subject) {
+      subject.proficiency_level = level;
+      teacherEditForm = { ...teacherEditForm };
+    }
+  }
+
+  async function saveTeacherEdit() {
+    if (!teacherEditForm) return;
+    teacherEditSaving = true;
+    try {
+      // Convert boolean to number for API
+      const formData = {
+        ...teacherEditForm,
+        is_active: teacherEditForm.is_active ? 1 : 0,
+        is_verified: teacherEditForm.is_verified ? 1 : 0
+      };
+      await api.post('/admin/teachers/edit.php', formData);
+      toast.success('Öğretmen bilgileri güncellendi');
+      closeTeacherEdit();
+      loadTeachers();
+    } catch (err) {
+      toast.error(err.message || 'Güncelleme başarısız');
+    } finally {
+      teacherEditSaving = false;
     }
   }
 
@@ -505,6 +613,12 @@ let activeSupportFilter = '';
                     </td>
                     <td class="px-4 py-3">
                       <div class="flex flex-wrap gap-2 justify-center">
+                        <button
+                          class="px-3 py-1 text-xs rounded-full bg-blue-600 text-white hover:bg-blue-700"
+                          on:click={() => openTeacherEdit(teacher.id)}
+                        >
+                          Düzenle
+                        </button>
                         <button
                           class="px-3 py-1 text-xs rounded-full bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
                           on:click={() => updateTeacherStatus(teacher.id, 'approved')}
@@ -918,5 +1032,173 @@ let activeSupportFilter = '';
     {:else if activeTab === 'podcast'}
       <PodcastManagement />
     {/if}
+  </div>
+{/if}
+
+<!-- Teacher Edit Modal -->
+{#if showTeacherEditModal}
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" on:click={closeTeacherEdit} on:keydown={(e) => e.key === 'Escape' && closeTeacherEdit()}>
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" on:click|stopPropagation>
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <h2 class="text-2xl font-bold text-gray-900">Öğretmen Düzenle</h2>
+        <button class="text-gray-400 hover:text-gray-600 text-2xl" on:click={closeTeacherEdit}>×</button>
+      </div>
+      
+      <div class="p-6">
+        {#if teacherEditLoading}
+          <div class="flex justify-center py-12">
+            <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        {:else if teacherEditForm}
+          <form on:submit|preventDefault={saveTeacherEdit} class="space-y-6">
+            <!-- Kişisel Bilgiler -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Kişisel Bilgiler</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                  <input type="text" bind:value={teacherEditForm.full_name} class="w-full border rounded-lg px-3 py-2" required />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input type="email" bind:value={teacherEditForm.email} class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                  <input type="tel" bind:value={teacherEditForm.phone} class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Onay Durumu</label>
+                  <select bind:value={teacherEditForm.approval_status} class="w-full border rounded-lg px-3 py-2">
+                    <option value="pending">Beklemede</option>
+                    <option value="approved">Onaylı</option>
+                    <option value="rejected">Reddedildi</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={teacherEditForm.is_active} on:change={(e) => teacherEditForm.is_active = e.currentTarget?.checked || false} class="rounded" />
+                    <span class="text-sm font-medium text-gray-700">Hesap Aktif</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={teacherEditForm.is_verified} on:change={(e) => teacherEditForm.is_verified = e.currentTarget?.checked || false} class="rounded" />
+                    <span class="text-sm font-medium text-gray-700">Doğrulanmış</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profil Bilgileri -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Profil Bilgileri</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Üniversite</label>
+                  <input type="text" bind:value={teacherEditForm.university} class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Bölüm</label>
+                  <input type="text" bind:value={teacherEditForm.department} class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Mezuniyet Yılı</label>
+                  <input type="number" bind:value={teacherEditForm.graduation_year} min="1950" max="2030" class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Deneyim (Yıl)</label>
+                  <input type="number" bind:value={teacherEditForm.experience_years} min="0" max="50" class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Saatlik Ücret (€)</label>
+                  <input type="number" bind:value={teacherEditForm.hourly_rate} min="0" step="0.5" class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Rating (0-5)</label>
+                  <input type="number" bind:value={teacherEditForm.rating_avg} min="0" max="5" step="0.1" class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Review Sayısı</label>
+                  <input type="number" bind:value={teacherEditForm.review_count} min="0" class="w-full border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <textarea bind:value={teacherEditForm.bio} rows="4" class="w-full border rounded-lg px-3 py-2"></textarea>
+              </div>
+            </div>
+
+            <!-- Lokasyon -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Lokasyon</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Şehir</label>
+                  <input type="text" bind:value={teacherEditForm.city} class="w-full border rounded-lg px-3 py-2" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Posta Kodu</label>
+                  <input type="text" bind:value={teacherEditForm.zip_code} class="w-full border rounded-lg px-3 py-2" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Dersler -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Dersler</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto border rounded-lg p-4">
+                {#each allSubjects as subject}
+                  {@const isSelected = teacherEditForm.subjects.some(s => s.id === subject.id)}
+                  <label class="flex items-start gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={isSelected}
+                      on:change={() => toggleSubject(subject.id)}
+                      class="mt-1 rounded"
+                    />
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-900">{subject.icon} {subject.name}</div>
+                      {#if isSelected}
+                        {@const selectedSubject = teacherEditForm.subjects.find(s => s.id === subject.id)}
+                        <select 
+                          value={selectedSubject?.proficiency_level || 'intermediate'}
+                          on:change={(e) => updateSubjectLevel(subject.id, e)}
+                          class="mt-1 text-xs border rounded px-2 py-1 w-full"
+                        >
+                          <option value="beginner">Başlangıç</option>
+                          <option value="intermediate">Orta</option>
+                          <option value="advanced">İleri</option>
+                          <option value="expert">Uzman</option>
+                        </select>
+                      {/if}
+                    </div>
+                  </label>
+                {/each}
+              </div>
+            </div>
+
+            <!-- Butonlar -->
+            <div class="flex justify-end gap-3 pt-4 border-t">
+              <button 
+                type="button"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                on:click={closeTeacherEdit}
+                disabled={teacherEditSaving}
+              >
+                İptal
+              </button>
+              <button 
+                type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                disabled={teacherEditSaving}
+              >
+                {teacherEditSaving ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </form>
+        {/if}
+      </div>
+    </div>
   </div>
 {/if}
