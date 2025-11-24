@@ -60,10 +60,44 @@
   {#if episode}
     <title>{episode.title} - Dijital Mentor Podcast</title>
     <meta name="description" content={episode.description || episode.title} />
+    <link rel="canonical" href={$page.url.href} />
+
+    <!-- Open Graph -->
     <meta property="og:title" content={episode.title} />
     <meta property="og:description" content={episode.description || ''} />
-    <meta property="og:image" content={episode.cover_image_url || ''} />
+    <meta property="og:image" content={episode.cover_image_url || 'https://dijitalmentor.de/default-podcast-cover.jpg'} />
+    <meta property="og:url" content={$page.url.href} />
     <meta property="og:type" content="music.song" />
+    <meta property="music:duration" content={episode.duration_seconds || ''} />
+    <meta property="music:release_date" content={episode.publish_date} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={episode.title} />
+    <meta name="twitter:description" content={episode.description || ''} />
+    <meta name="twitter:image" content={episode.cover_image_url || 'https://dijitalmentor.de/default-podcast-cover.jpg'} />
+
+    <!-- JSON-LD Structured Data -->
+    {@html `<script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "PodcastEpisode",
+        "name": "${episode.title}",
+        "description": "${episode.description ? episode.description.replace(/"/g, '\\"') : ''}",
+        "image": "${episode.cover_image_url || 'https://dijitalmentor.de/default-podcast-cover.jpg'}",
+        "datePublished": "${episode.publish_date}",
+        "timeRequired": "PT${Math.floor((episode.duration_seconds || 0) / 60)}M",
+        "associatedMedia": {
+          "@type": "MediaObject",
+          "contentUrl": "${episode.audio_url || ''}"
+        },
+        "partOfSeries": {
+          "@type": "PodcastSeries",
+          "name": "Dijital Mentor Podcast",
+          "url": "https://dijitalmentor.de/podcast"
+        }
+      }
+    </script>`}
   {/if}
 </svelte:head>
 
