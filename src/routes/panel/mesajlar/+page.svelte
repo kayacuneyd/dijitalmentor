@@ -6,6 +6,7 @@
   import { page } from '$app/stores';
   import AgreementForm from '$lib/components/AgreementForm.svelte';
   import AgreementCard from '$lib/components/AgreementCard.svelte';
+  import LessonAgreementForm from '$lib/components/LessonAgreementForm.svelte';
   import { toast } from '$lib/stores/toast.js';
   import { browser } from '$app/environment';
 
@@ -18,6 +19,9 @@
   let agreements = [];
   let agreementsLoading = false;
   let showAgreementForm = false;
+  let lessonAgreements = [];
+  let lessonAgreementsLoading = false;
+  let showLessonAgreementForm = false;
   let subjects = [];
   let subjectsLoading = false;
   let isMobile = false;
@@ -29,72 +33,74 @@
 
   const cleanupFns = [];
 
-  onMount(async () => {
-    if (!$authStore.isAuthenticated) {
-      goto('/giris');
-      return;
-    }
-
-    if (browser) {
-      const mql = window.matchMedia('(max-width: 767px)');
-      const handleChange = (event) => {
-        isMobile = event.matches;
-        if (!isMobile) {
-          showMobileList = false;
-        } else if (!activeConversation) {
-          showMobileList = true;
-        }
-      };
-      handleChange(mql);
-      mql.addEventListener('change', handleChange);
-      cleanupFns.push(() => mql.removeEventListener('change', handleChange));
-    }
-
-    await loadConversations();
-
-    // Check for conversation_id query param to select existing conversation
-    const conversationId = $page.url.searchParams.get('conversation_id');
-    if (conversationId) {
-      const idNum = parseInt(conversationId);
-      console.log('Looking for conversation ID:', idNum);
-      console.log('Available conversations:', conversations);
-      const conv = conversations.find(c => c.id === idNum);
-      console.log('Found conversation:', conv);
-      if (conv) {
-        await selectConversation(conv);
-      } else if (conversations.length > 0) {
-        console.warn('Conversation not found, selecting first one');
-        await selectConversation(conversations[0]);
-      } else {
-        console.error('No conversations available');
+  onMount(() => {
+    (async () => {
+      if (!$authStore.isAuthenticated) {
+        goto('/giris');
+        return;
       }
-    }
-    // Check for teacher_id query param to start new chat
-    else {
-      const teacherId = $page.url.searchParams.get('teacher_id');
-      if (teacherId) {
-        const idNum = parseInt(teacherId);
-        // Öğretmenler diğer öğretmenlerle mesajlaşamaz
-        if ($authStore.user?.role === 'student') {
-          toast.error('Öğretmenler diğer öğretmenlerle mesajlaşamaz');
+
+      if (browser) {
+        const mql = window.matchMedia('(max-width: 767px)');
+        const handleChange = (event) => {
+          isMobile = event.matches;
+          if (!isMobile) {
+            showMobileList = false;
+          } else if (!activeConversation) {
+            showMobileList = true;
+          }
+        };
+        handleChange(mql);
+        mql.addEventListener('change', handleChange);
+        cleanupFns.push(() => mql.removeEventListener('change', handleChange));
+      }
+
+      await loadConversations();
+
+      // Check for conversation_id query param to select existing conversation
+      const conversationId = $page.url.searchParams.get('conversation_id');
+      if (conversationId) {
+        const idNum = parseInt(conversationId);
+        console.log('Looking for conversation ID:', idNum);
+        console.log('Available conversations:', conversations);
+        const conv = conversations.find(c => c.id === idNum);
+        console.log('Found conversation:', conv);
+        if (conv) {
+          await selectConversation(conv);
+        } else if (conversations.length > 0) {
+          console.warn('Conversation not found, selecting first one');
+          await selectConversation(conversations[0]);
         } else {
-          await startNewConversation(idNum);
+          console.error('No conversations available');
         }
-      } else if (conversations.length > 0) {
-        selectConversation(conversations[0]);
       }
-    }
-
-    loadSubjects();
-
-    // Auto-refresh every 30 seconds
-    refreshInterval = setInterval(() => {
-      if (activeConversation) {
-        loadMessages(activeConversation.id, true);
-        loadAgreements(activeConversation.id, true);
+      // Check for teacher_id query param to start new chat
+      else {
+        const teacherId = $page.url.searchParams.get('teacher_id');
+        if (teacherId) {
+          const idNum = parseInt(teacherId);
+          // Öğretmenler diğer öğretmenlerle mesajlaşamaz
+          if ($authStore.user?.role === 'student') {
+            toast.error('Öğretmenler diğer öğretmenlerle mesajlaşamaz');
+          } else {
+            await startNewConversation(idNum);
+          }
+        } else if (conversations.length > 0) {
+          selectConversation(conversations[0]);
+        }
       }
-      loadConversations();
-    }, 30000);
+
+      loadSubjects();
+
+      // Auto-refresh every 30 seconds
+      refreshInterval = setInterval(() => {
+        if (activeConversation) {
+          loadMessages(activeConversation.id, true);
+          loadAgreements(activeConversation.id, true);
+        }
+        loadConversations();
+      }, 30000);
+    })();
 
     return () => {
       if (refreshInterval) clearInterval(refreshInterval);
@@ -121,6 +127,7 @@
     }
     await loadMessages(conv.id);
     await loadAgreements(conv.id);
+    await loadLessonAgreements();
   }
 
   async function loadMessages(conversationId, silent = false) {
@@ -223,6 +230,24 @@
     }
   }
 
+  async function loadLessonAgreements() {
+    if (!activeConversation) return;
+    lessonAgreementsLoading = true;
+    try {
+      const res = await api.get('/lessons/agreements.php');
+      // Filter agreements for current conversation
+      lessonAgreements = (res.data || []).filter(agreement => {
+        const teacherId = user?.role === 'student' ? user.id : activeConversation.other_user.id;
+        const parentId = user?.role === 'parent' ? user.id : activeConversation.other_user.id;
+        return agreement.teacher_id === teacherId && agreement.parent_id === parentId;
+      });
+    } catch (e) {
+      console.error('Error loading lesson agreements:', e);
+    } finally {
+      lessonAgreementsLoading = false;
+    }
+  }
+
   function handleAgreementSuccess() {
     showAgreementForm = false;
     if (activeConversation) {
@@ -234,6 +259,11 @@
     if (activeConversation) {
       loadAgreements(activeConversation.id);
     }
+  }
+
+  function handleLessonAgreementSuccess() {
+    showLessonAgreementForm = false;
+    loadLessonAgreements();
   }
 
   function handleHoursLogged(event) {
@@ -339,7 +369,74 @@
           {/if}
         </div>
 
-        <!-- Agreements -->
+        <!-- Lesson Agreements Section -->
+        <div class="bg-white border-t border-gray-100 px-4 py-3 space-y-3">
+          <div class="border border-green-100 rounded-xl overflow-hidden">
+            <button
+              class="w-full flex items-center justify-between px-4 py-3 text-left bg-green-50 hover:bg-green-100 transition"
+              on:click={() => showLessonAgreementForm = !showLessonAgreementForm}
+            >
+              <div>
+                <h4 class="text-sm font-semibold text-gray-900">Ders Anlaşması Oluştur</h4>
+                <p class="text-xs text-gray-600">Yer, saat, fiyat konusunda anlaşın</p>
+              </div>
+              <svg class={`w-5 h-5 text-green-600 transition-transform ${showLessonAgreementForm ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div
+              class={`overflow-hidden transition-all duration-300 ${showLessonAgreementForm ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}
+            >
+              {#if showLessonAgreementForm}
+                <div class="p-4">
+                  <LessonAgreementForm
+                    conversationId={activeConversation.id}
+                    teacherId={user?.role === 'student' ? user.id : activeConversation.other_user.id}
+                    parentId={user?.role === 'parent' ? user.id : activeConversation.other_user.id}
+                    subjects={subjects}
+                    on:success={handleLessonAgreementSuccess}
+                  />
+                </div>
+              {/if}
+            </div>
+          </div>
+
+          {#if lessonAgreementsLoading}
+            <div class="text-sm text-gray-500">Anlaşmalar yükleniyor...</div>
+          {:else if lessonAgreements.length > 0}
+            <div class="space-y-2">
+              <h5 class="text-sm font-semibold text-gray-900">Ders Anlaşmaları</h5>
+              {#each lessonAgreements as agreement}
+                <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <span class="text-lg">{agreement.subject_icon}</span>
+                      <span class="font-semibold text-gray-900">{agreement.subject_name}</span>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full {
+                      agreement.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                      agreement.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                      agreement.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }">
+                      {agreement.status === 'confirmed' ? 'Onaylandı' :
+                       agreement.status === 'completed' ? 'Tamamlandı' :
+                       agreement.status === 'cancelled' ? 'İptal' :
+                       'Beklemede'}
+                    </span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <p>📅 {new Date(agreement.lesson_date).toLocaleDateString('tr-TR')} {agreement.lesson_time ? '• ' + agreement.lesson_time : ''}</p>
+                    <p>💰 €{agreement.agreed_price}/saat • {agreement.agreed_duration} saat</p>
+                    <p>📍 {agreement.location === 'online' ? 'Online' : agreement.location === 'in_person' ? 'Yüz Yüze' : 'Adres'}</p>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <!-- Agreements (Existing Onay Formu) -->
         <div class="bg-white border-t border-gray-100 px-4 py-3 space-y-3">
           <div class="border border-blue-100 rounded-xl overflow-hidden">
             <button

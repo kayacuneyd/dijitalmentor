@@ -10,6 +10,17 @@
   let error = null;
   let showContactModal = false;
   
+  // Review form state
+  let reviewEligibility = null;
+  let checkingEligibility = false;
+  let showReviewForm = false;
+  let reviewForm = {
+    rating: 5,
+    comment: '',
+    agreement_id: null
+  };
+  let submittingReview = false;
+  
   $: teacherId = $page.params.id;
   $: isAuthenticated = $authStore.isAuthenticated;
   $: userRole = $authStore.user?.role;
@@ -19,10 +30,67 @@
     try {
       const response = await api.get('/teachers/detail.php', { id: teacherId });
       teacher = response.data;
+      
+      // Check eligibility if user is parent
+      if (isAuthenticated && userRole === 'parent') {
+        await checkReviewEligibility();
+      }
     } catch (e) {
       error = 'Profil yüklenemedi';
     } finally {
       loading = false;
+    }
+  }
+  
+  async function checkReviewEligibility() {
+    if (!isAuthenticated || userRole !== 'parent') return;
+    
+    checkingEligibility = true;
+    try {
+      const response = await api.get('/reviews/check_eligibility.php', { teacher_id: teacherId });
+      reviewEligibility = response.data;
+    } catch (e) {
+      console.error('Eligibility check failed:', e);
+    } finally {
+      checkingEligibility = false;
+    }
+  }
+  
+  function openReviewForm() {
+    if (reviewEligibility?.can_review) {
+      showReviewForm = true;
+      if (reviewEligibility.agreements?.length > 0) {
+        reviewForm.agreement_id = reviewEligibility.agreements[0].id;
+      }
+    }
+  }
+  
+  async function submitReview() {
+    if (!reviewForm.rating || !reviewForm.comment.trim()) {
+      toast.error('Lütfen puan ve yorum giriniz');
+      return;
+    }
+    
+    submittingReview = true;
+    try {
+      await api.post('/reviews/submit.php', {
+        teacher_id: teacherId,
+        agreement_id: reviewForm.agreement_id,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment.trim(),
+        is_public: 1
+      });
+      
+      toast.success('Yorumunuz incelenmek üzere gönderildi');
+      showReviewForm = false;
+      reviewForm = { rating: 5, comment: '', agreement_id: null };
+      
+      // Reload teacher data to show new review
+      await loadTeacher();
+    } catch (e) {
+      toast.error(e.message || 'Yorum gönderilemedi');
+    } finally {
+      submittingReview = false;
     }
   }
   
@@ -185,10 +253,21 @@
           </div>
         {/if}
         
-        <!-- Reviews -->
-        {#if teacher.reviews && teacher.reviews.length > 0}
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 class="text-xl font-bold mb-6 text-gray-900">Değerlendirmeler</h2>
+        <!-- Reviews Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Değerlendirmeler</h2>
+            {#if isAuthenticated && userRole === 'parent' && reviewEligibility?.can_review}
+              <button
+                on:click={openReviewForm}
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-semibold"
+              >
+                + Yorum Yap
+              </button>
+            {/if}
+          </div>
+          
+          {#if teacher.reviews && teacher.reviews.length > 0}
             <div class="space-y-6">
               {#each teacher.reviews as review}
                 <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
@@ -212,8 +291,53 @@
                 </div>
               {/each}
             </div>
-          </div>
-        {/if}
+          {:else}
+            <p class="text-gray-500 text-center py-8">Henüz değerlendirme yapılmamış</p>
+          {/if}
+          
+          <!-- Eligibility Info for Parents -->
+          {#if isAuthenticated && userRole === 'parent' && !checkingEligibility && reviewEligibility}
+            {#if !reviewEligibility.can_review}
+              <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 class="font-semibold text-yellow-900 mb-2">Yorum Yapabilmek İçin:</h3>
+                <ul class="space-y-1 text-sm text-yellow-800">
+                  <li class="flex items-center gap-2">
+                    {#if reviewEligibility.requirements.is_member}
+                      <span class="text-green-600">✓</span>
+                    {:else}
+                      <span class="text-gray-400">○</span>
+                    {/if}
+                    Siteye üye olmak
+                  </li>
+                  <li class="flex items-center gap-2">
+                    {#if reviewEligibility.requirements.has_messaged}
+                      <span class="text-green-600">✓</span>
+                    {:else}
+                      <span class="text-gray-400">○</span>
+                    {/if}
+                    Bu öğretmenle mesajlaşmış olmak
+                  </li>
+                  <li class="flex items-center gap-2">
+                    {#if reviewEligibility.requirements.has_agreement}
+                      <span class="text-green-600">✓</span>
+                    {:else}
+                      <span class="text-gray-400">○</span>
+                    {/if}
+                    Eğitim konusunda anlaşmış olmak (yer, saat, fiyat)
+                  </li>
+                </ul>
+                {#if !reviewEligibility.requirements.has_messaged}
+                  <a
+                    href="/panel/mesajlar?teacher_id={teacherId}"
+                    class="mt-3 inline-block text-sm text-blue-600 hover:underline font-semibold"
+                  >
+                    Mesajlaşmaya başla →
+                  </a>
+                {/if}
+              </div>
+            {/if}
+          {/if}
+        </div>
       </div>
       
       <!-- Right Column (Sidebar) -->
@@ -324,6 +448,97 @@
       >
         Anlaşıldı, Kapat
       </button>
+    </div>
+  </div>
+{/if}
+
+<!-- Review Form Modal -->
+{#if showReviewForm}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all" on:click|stopPropagation>
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-900">Değerlendirme Yap</h3>
+        <button
+          on:click={() => showReviewForm = false}
+          class="text-gray-400 hover:text-gray-600 text-2xl"
+        >
+          ×
+        </button>
+      </div>
+      
+      <form on:submit|preventDefault={submitReview} class="space-y-4">
+        <!-- Agreement Selection -->
+        {#if reviewEligibility?.agreements?.length > 1}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Hangi anlaşma için yorum yapıyorsunuz?
+            </label>
+            <select
+              bind:value={reviewForm.agreement_id}
+              class="w-full border rounded-lg px-3 py-2"
+              required
+            >
+              {#each reviewEligibility.agreements as agreement}
+                <option value={agreement.id}>
+                  {agreement.subject_icon} {agreement.subject_name} - {new Date(agreement.lesson_date).toLocaleDateString('tr-TR')}
+                </option>
+              {/each}
+            </select>
+          </div>
+        {/if}
+        
+        <!-- Rating -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Puan (1-5)
+          </label>
+          <div class="flex gap-2">
+            {#each Array(5) as _, i}
+              <button
+                type="button"
+                on:click={() => reviewForm.rating = i + 1}
+                class="text-3xl transition transform hover:scale-110 {reviewForm.rating > i ? 'text-yellow-400' : 'text-gray-300'}"
+              >
+                ⭐
+              </button>
+            {/each}
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Seçilen: {reviewForm.rating}/5</p>
+        </div>
+        
+        <!-- Comment -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Yorumunuz
+          </label>
+          <textarea
+            bind:value={reviewForm.comment}
+            rows="4"
+            class="w-full border rounded-lg px-3 py-2"
+            placeholder="Ders deneyiminiz hakkında yorum yapın..."
+            required
+          ></textarea>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="flex gap-3 pt-4">
+          <button
+            type="button"
+            on:click={() => showReviewForm = false}
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            disabled={submittingReview}
+          >
+            İptal
+          </button>
+          <button
+            type="submit"
+            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            disabled={submittingReview}
+          >
+            {submittingReview ? 'Gönderiliyor...' : 'Gönder'}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 {/if}
